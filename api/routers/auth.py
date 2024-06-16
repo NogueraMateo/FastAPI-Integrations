@@ -23,8 +23,7 @@ from datetime import timedelta
 import redis
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
-from starlette.config import Config
-from starlette.responses import RedirectResponse
+
 
 oauth = OAuth()
 
@@ -35,7 +34,6 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'email openid profile',
-        'redirect_url' :'http://localhost:8000/auth'
     }
 )
 
@@ -94,17 +92,48 @@ async def login_google(request: Request):
     return await oauth.google.authorize_redirect(request, url)
 
 @router.get("/auth")
-async def auth(request: Request):
+async def auth(response: Response, request: Request, db: Session= Depends(get_db)):
     try:
-        token = await oauth.google.authorize_access_token(request)
+        res = await oauth.google.authorize_access_token(request)
     except OAuthError as e:
         raise HTTPException(status_code=400, detail="No se pudo obtener el token")
 
-    user = token.get('userinfo')
-    print(user)
-    if user:
-        request.session['user'] = dict(user)
-    return {'message' : 'welcome'} 
+    user_info = res.get('userinfo')
+    google_access_token = res.get('access_token')
+
+    if user_info:
+        user_email = user_info['email']
+        user_first_name = user_info['given_name']
+        user_lastname = user_info['family_name']
+
+        user_service = UserService(db)
+        user_db = user_service.get_user_by_email(user_email)
+
+        if not user_db:
+            user_db = user_service.create_user(schemas.UserCreate(
+                first_name=user_first_name,
+                lastname=user_lastname,
+                email=user_email,
+                google_access_token=google_access_token
+            ))
+        else:
+            user_service.update_user(user_db.id, schemas.UserUpdate(google_access_token=google_access_token))
+    
+    access_token = await create_access_token(data={"sub": user_db.email})
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        secure=False,  # Debe ser True en producción con HTTPS
+        samesite='Lax',
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+
+    return {
+        "access_token": access_token,
+        "token-type": "Bearer",
+        "email": user_db.email
+    }
 
 
 @router.post("/register", status_code= 201)

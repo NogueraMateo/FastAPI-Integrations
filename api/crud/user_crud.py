@@ -32,7 +32,10 @@ class UserService:
 
 
     def create_user(self, user: schemas.UserCreate) -> models.User:
-        password_hash = crypt.hash(user.plain_password)
+        data = user.model_dump(exclude_unset=True)
+        
+        password_hash = crypt.hash(user.plain_password) if "plain_password" in data else None
+
         db_user = models.User(
             first_name= user.first_name,
             second_name= user.second_name,
@@ -40,7 +43,8 @@ class UserService:
             email= user.email,
             phone_number= user.phone_number,
             document= user.document,
-            password_hash= password_hash)
+            password_hash= password_hash,
+            google_access_token= user.google_access_token)
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)

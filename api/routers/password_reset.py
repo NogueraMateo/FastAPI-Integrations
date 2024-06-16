@@ -67,7 +67,7 @@ async def reset_password(info: ResetPasswordFields, db: Session = Depends(get_db
     if len(info.new_password) < 7:
         raise HTTPException(status_code=400, detail="Password must be at least 7 characters long")
 
-    user_update = UserUpdate(password= info.new_password)
+    user_update = UserUpdate(plain_password= info.new_password)
     user_service.update_user(user_id= user.id, user_update= user_update)
 
     token_update= PasswordResetTokenUpdate(is_used= True)

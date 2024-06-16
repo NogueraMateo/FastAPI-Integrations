@@ -8,15 +8,16 @@ class UserBase(BaseModel):
     second_name: Optional[str] = None
     lastname: str
     email: EmailStr
-    phone_number: str
+    phone_number: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 # Creating an user
 class UserCreate(UserBase):
-    document: str
-    plain_password: Optional[str]
+    document: Optional[str] = None
+    plain_password: Optional[str] = None
+    google_access_token: Optional[str] = None
 
     @field_validator('first_name')
     def first_name_must_not_be_empty(cls, v):
@@ -51,6 +52,7 @@ class UserUpdate(BaseModel):
     last_meeting_scheduled: Optional[datetime]= None
     is_active: Optional[bool] = None    
     role: Optional[str] = None
+    google_access_token: Optional[str] = None
 
     class Config:
         from_attributes= True
@@ -148,13 +150,14 @@ class User(UserBase):
     id: int
     is_active: bool
     role: str
+    google_access_token: str
     meetings: List[Meeting] = []
     reset_tokens: List[PasswordResetToken] = []
     email_confirmation_tokens: List[EmailConfirmationToken] = []
 
 
 class TokenData(BaseModel):
-    username: str | None = None
+    email: EmailStr | None = None
 
 class ResetPasswordFields(BaseModel):
     token: str

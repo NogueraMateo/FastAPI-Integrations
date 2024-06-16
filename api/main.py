@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import password_reset
 from .routers import meetings
 from starlette.middleware.sessions import SessionMiddleware
-from .config.constants import GOOGLE_OAUTH_SECRET_CLIENT
+from .config.constants import ACCESS_TOKEN_SECRET_KEY
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos los headers
 )
 
-app.add_middleware(SessionMiddleware, secret_key = GOOGLE_OAUTH_SECRET_CLIENT)
+app.add_middleware(SessionMiddleware, secret_key = "0173844fdef45b5213ec60cfb2e22b2c10cf75524583245184e91a4e76012d81")
 app.include_router(auth.router)
 app.include_router(password_reset.router)
 app.include_router(meetings.router)

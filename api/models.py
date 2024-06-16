@@ -21,6 +21,7 @@ class User(Base):
     last_meeting_scheduled = Column(DateTime(timezone=True), default=None)
     is_active = Column(Boolean, default= False, nullable= False)
     role = Column(String, default="REGULAR", nullable=False)
+    google_access_token = Column(String, nullable=True)
 
     meetings= relationship('Meeting', back_populates= 'user', cascade="all, delete-orphan") 
     reset_tokens= relationship('PasswordResetToken', back_populates= 'user', cascade="all, delete-orphan")

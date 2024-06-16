@@ -22,7 +22,7 @@ async def authenticate_user(db: Session, email: EmailStr, password: str):
 
 
 async def create_access_token(data: dict, expires_delta: Optional[timedelta]= None):
-    '''Generates an access token given a dict and an expiration time'''
+    '''Generates a login access token given a dict and an expiration time'''
     to_encode = data.copy()
     if expires_delta is not None:
         expire = datetime.now(timezone.utc) + expires_delta
