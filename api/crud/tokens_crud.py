@@ -9,6 +9,8 @@ from ..config.constants import (
     CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES, EMAIL_CONFIRMATION_SECRET_KEY, ALGORITHM,
     RESET_TOKEN_EXPIRE_MINUTES, PASSWORD_RESET_SECRET_KEY
     )
+from ..config.exceptions import credentials_exception, expired_token_exception
+
 
 class TokenServiceBase:
 

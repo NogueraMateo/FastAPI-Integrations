@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
-from .. import schemas, models
+from .. import models
 import base64
 import json
 import requests

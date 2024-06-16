@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from ..schemas import MeetingCreate, UserUpdate
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..models import Advisor, User
+from ..models import User
 
 
 router = APIRouter()

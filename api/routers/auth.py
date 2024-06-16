@@ -12,6 +12,8 @@ from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, Response, HTTPException, Request, Response 
 
+from ..config.constants import GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_SECRET_CLIENT
+
 from ..database import get_db
 from .. import schemas
 
@@ -28,8 +30,8 @@ oauth = OAuth()
 
 oauth.register(
     name='google',
-    client_id='818061277255-1s3qvah94db3qapfps2tprihnrkv2n9p.apps.googleusercontent.com',
-    client_secret='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',
+    client_id=GOOGLE_OAUTH_CLIENT_ID,
+    client_secret=GOOGLE_OAUTH_SECRET_CLIENT,
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'email openid profile',

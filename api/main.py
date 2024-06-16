@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from . import models
-from .database import SessionLocal, engine, get_db
+from .database import engine
 from .routers import auth
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import password_reset
 from .routers import meetings
-from .models import Advisor
 from starlette.middleware.sessions import SessionMiddleware
 from .config.constants import GOOGLE_OAUTH_SECRET_CLIENT
 
