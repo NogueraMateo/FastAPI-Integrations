@@ -1,8 +1,9 @@
-from ..utils.meeting_utils import send_meeting_invitations_to_advisors, send_meeting_invitations_to_users, get_next_advisor
-from ..crud.meeting_crud import MeetingService
-from ..crud.user_crud import UserService
+from ..utils.meeting_utils import get_next_advisor
+from ..services.meeting_service import MeetingService
+from ..services.user_service import UserService
+from ..services.email_service import EmailService
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends
 from ..utils.auth_utils import get_current_user
 
 from datetime import datetime, timezone
@@ -14,17 +15,16 @@ from ..models import User
 
 router = APIRouter()
 
-# ------------------------------------------ ROUTE FOR SCHEDULING MEETINGS --------------------------------------------
-
+# ------------------------------------------ ROUTE FOR SCHEDULING MEETINGS ------------------------------------------
 @router.post("/schedule-meeting/")
 async def schedule_meeting(
     meeting_data: MeetingCreate,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     meeting_service = MeetingService(db)
     user_service = UserService(db)
+    email_service = EmailService()
 
     if not current_user:
         raise HTTPException(status_code=401, detail= "Unauthorized")
@@ -49,8 +49,8 @@ async def schedule_meeting(
     user_update = UserUpdate(last_meeting_scheduled= datetime.now(timezone.utc))
     user_service.update_user(user_id=current_user.id, user_update= user_update)
 
-    background_tasks.add_task(send_meeting_invitations_to_users, current_user.email, meeting_info)
-    background_tasks.add_task(send_meeting_invitations_to_advisors, advisor.email, meeting_info, current_user)
+    await email_service.send_meeting_invitations_to_users(current_user.email, meeting_info)
+    await email_service.send_meeting_invitations_to_advisors(advisor.email, meeting_info, current_user)
 
     return {
         "message": "Meeting scheduled successfully",

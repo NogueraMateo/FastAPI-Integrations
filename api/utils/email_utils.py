@@ -14,15 +14,3 @@ conf = ConnectionConfig(
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
 )
-
-# ------------------------------------ MAIL FUNCTIONS! ------------------------------------
-async def send_confirmation_account_message(email_to: str, token:str):
-    message = MessageSchema(
-        subject="Confirmación de tu cuenta",
-        recipients=[email_to],
-        body=f'''Hola, por favor sigue el siguiente enlace para confirmar tu cuenta: 
-        <a href="http://127.0.0.1:5500/confirm-account.html?token={token}">Aquí</a>''',
-        subtype="html"
-    )
-    fm = FastMail(conf)
-    await fm.send_message(message)

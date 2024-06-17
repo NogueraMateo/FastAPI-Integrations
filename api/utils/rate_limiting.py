@@ -1,6 +1,18 @@
 from redis import Redis
 
 def rate_limit_exceeded(redis_client: Redis, identifier: str, max_requests: int, period: int):
+    """
+    Check if the rate limit has been exceeded for a given identifier.
+
+    Args:
+        redis_client (Redis): The Redis client.
+        identifier (str): The unique identifier for rate limiting (e.g., user IP address).
+        max_requests (int): The maximum number of allowed requests within the period.
+        period (int): The time period (in seconds) for rate limiting.
+
+    Returns:
+        bool: True if the rate limit has been exceeded, False otherwise.
+    """
     key = f"rate_limit:{identifier}"
     current_requests = redis_client.get(key)
 

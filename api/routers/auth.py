@@ -1,11 +1,11 @@
 # --------------------- UTILS! ---------------------
 from ..utils.auth_utils import authenticate_user, create_access_token
 from ..utils.rate_limiting import rate_limit_exceeded
-from ..utils.email_utils import send_confirmation_account_message
 
-# --------------------- CRUD! ---------------------
-from ..crud.user_crud import UserService
-from ..crud.tokens_crud import EmailConfirmationTokenService
+# --------------------- SERVICES! ---------------------
+from ..services.user_service import UserService
+from ..services.token_service import EmailConfirmationTokenService
+from ..services.email_service import EmailService
 
 from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -34,7 +34,8 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'email openid profile',
-    }
+    },
+    redirect_uri = 'http://127.0.0.1:8000/auth'
 )
 
 router = APIRouter(tags=["Login"])
@@ -86,10 +87,12 @@ async def login(
         "email" : user.email
     }
 
+
 @router.get("/login/google")
 async def login_google(request: Request):
     url = request.url_for("auth")
     return await oauth.google.authorize_redirect(request, url)
+
 
 @router.get("/auth")
 async def auth(response: Response, request: Request, db: Session= Depends(get_db)):
@@ -110,12 +113,25 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
         user_db = user_service.get_user_by_email(user_email)
 
         if not user_db:
-            user_db = user_service.create_user(schemas.UserCreate(
+            user_created = user_service.create_user(schemas.UserCreate(
                 first_name=user_first_name,
                 lastname=user_lastname,
                 email=user_email,
                 google_access_token=google_access_token
             ))
+            token_service = EmailConfirmationTokenService(db)
+            email_service = EmailService()
+
+            # Generating email confirmation token
+            token_data = {"sub" : user_created.email, "aud" : "email-confirmation"}
+            token, expiry = await token_service.create_token(data= token_data)
+
+            # Inserting the new token to the database
+            token_service.insert_token(user_created.id, token, expiry)
+
+            # Sending confirmation email
+            await email_service.send_confirmation_account_message(user_created.email, token)
+ 
         else:
             user_service.update_user(user_db.id, schemas.UserUpdate(google_access_token=google_access_token))
     
@@ -150,6 +166,7 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     
     user_service = UserService(db)
     token_service = EmailConfirmationTokenService(db)
+    email_service = EmailService()
 
     exists_email = user_service.get_user_by_email(user_email= user.email)
     exists_phone_number = user_service.get_user_by_phone_number(phone_number= user.phone_number)
@@ -178,7 +195,7 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     token_service.insert_token(user_created.id, token, expiry)
 
     # Sending confirmation email
-    await send_confirmation_account_message(user.email, token)
+    await email_service.send_confirmation_account_message(user.email, token)
 
     return {"message" : "User registered successfully, please check your email to confirm your account.",
             "token" : token}

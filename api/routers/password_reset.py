@@ -1,11 +1,11 @@
 from .auth import redis_client
 
-from ..crud.user_crud import UserService
-from ..crud.tokens_crud import PasswordResetTokenService
+from ..services.user_service import UserService
+from ..services.token_service import PasswordResetTokenService
+from ..services.email_service import EmailService
 
 from ..schemas import UserUpdate, PasswordResetTokenUpdate, ResetPasswordFields
 from ..database import get_db
-from ..utils.password_reset_utils import send_reset_password_email
 
 from ..utils.rate_limiting import rate_limit_exceeded
 
@@ -22,6 +22,7 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
     # Servicios necesarios
     user_service = UserService(db)
     token_service = PasswordResetTokenService(db)
+    email_service = EmailService()
 
     # Usando la IP del cliente como identificador o el email para el rate limiting
     client_ip = request.client.host
@@ -36,16 +37,15 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
         raise HTTPException(status_code=404, detail="El usuario no existe.")
     
     # Genera el token con alguna información útil y un tiempo de expiración
+    token_data = {"sub": email, "aud": "password-recovery"}
     password_reset_token, expiry = await token_service.create_token(
-        data={"sub": email, "aud": "password-recovery"}
+        data= token_data
     )
     
     token_service.insert_token(user_id=user.id, token= password_reset_token, expiry= expiry)
 
     # Envía el email en segundo plano
-    background_tasks.add_task(
-        send_reset_password_email, email_to=email, token=password_reset_token
-    )
+    await email_service.send_reset_password_email(email, password_reset_token)
 
     return {"msg": "El enlace para restablecer tu contraseña ha sido enviado, por favor revisa tu email.",
             "token" : password_reset_token}
