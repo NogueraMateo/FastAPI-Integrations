@@ -7,6 +7,7 @@ from ..models import Advisor, User
 from pydantic import EmailStr, BaseModel
 from typing import Optional
 from ..services.token_service import EmailConfirmationTokenService, PasswordResetTokenService
+from ..config.email_messages import confirmation_message, reset_message
 
 class EmailService:
 
@@ -90,8 +91,7 @@ class EmailService:
         message = MessageSchema(
             subject="Confirmación de tu cuenta",
             recipients=[email_to],
-            body=f'''Hola, por favor sigue el siguiente enlace para confirmar tu cuenta: 
-            <a href="http://127.0.0.1:5500/confirm-account.html?token={token}">Aquí</a>''',
+            body=confirmation_message(token),
             subtype="html"
         )
         fm = FastMail(conf)
@@ -112,8 +112,7 @@ class EmailService:
         message = MessageSchema(
             subject="Recuperación de contraseña",
             recipients=[email_to],
-            body=f'''Hola, sigue este enlace para restablecer tu contraseña: 
-            <a href="http://127.0.0.1:5500/recover.html?token={token}">Aquí</a>''',
+            body=reset_message(token),
             subtype="html"
         )
         fm = FastMail(conf)

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #ff4c4c;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin: 10px 0 5px;
+        }
+        input[type="password"], input[type="submit"] {
+            padding: 10px;
+            margin: 5px 0 20px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            background-color: #ff4c4c;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #e04343;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reset your password</h1>
+        <form id="reset-form">
+            <label for="new-password">New password</label>
+            <input type="password" id="new-password" name="new-password" required>
+            <label for="confirm-password">Confirm new password</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
+            <input type="submit" value="Reset Password">
+        </form>
+    </div>
+
+    <script>
+        // Función para obtener el valor de un parámetro de la URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Manejar el envío del formulario
+        document.getElementById('reset-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const token = getQueryParam('token')
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword !== confirmPassword) {
+                alert("Passwords don't match");
+                return;
+            }
+
+            // Realizar una solicitud al servidor para restablecer la contraseña
+            const response = await fetch('http://localhost:8000/reset-password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token : token, new_password : newPassword, new_password_confirm: confirmPassword })
+            });
+
+            if (response.ok) {
+                alert("Password successfully reset.");
+            } else {
+                alert("Error resetting password.");
+            }
+        });
+    </script>
+</body>
+</html>

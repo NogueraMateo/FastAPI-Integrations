@@ -1,10 +1,15 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Enum
 from passlib.context import CryptContext
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone, timedelta
 from .database import Base
+import enum
 
 crypt = CryptContext(schemes=["bcrypt"])
+
+class UserRole(enum.Enum):
+    REGULAR = "REGULAR"
+    ADMIN = "ADMIN"
 
 class User(Base):
     """
@@ -42,7 +47,7 @@ class User(Base):
     date_of_creation= Column(DateTime, default= lambda: datetime.now(timezone.utc))
     last_meeting_scheduled = Column(DateTime(timezone=True), default=None)
     is_active = Column(Boolean, default= False, nullable= False)
-    role = Column(String, default="REGULAR", nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.REGULAR, nullable=False)
     google_access_token = Column(String, nullable=True)
 
     meetings= relationship('Meeting', back_populates= 'user', cascade="all, delete-orphan") 

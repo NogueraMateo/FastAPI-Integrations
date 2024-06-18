@@ -10,7 +10,8 @@ from ..services.email_service import EmailService
 from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES
 
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, Depends, Response, HTTPException, Request, Response 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from ..config.constants import GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_SECRET_CLIENT
 
@@ -23,6 +24,8 @@ from datetime import timedelta
 import redis
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
+from starlette.requests import Request
+from starlette.responses import Response
 
 
 oauth = OAuth()
@@ -35,10 +38,10 @@ oauth.register(
     client_kwargs={
         'scope': 'email openid profile',
     },
-    redirect_uri = 'http://127.0.0.1:8000/auth'
+    redirect_uri = 'http://localhost:8000/auth'
 )
 
-router = APIRouter(tags=["Login"])
+router = APIRouter(tags=["Login and Registration"])
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses= True)
 
 @router.post("/login")
@@ -180,7 +183,6 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     
     elif exists_document:
         raise HTTPException(status_code=400, detail="Document alredy registered")
-    
 
     if len(user.plain_password) < 7:
         raise HTTPException(status_code=400, detail="Password must be at least 7 characters long.")
@@ -201,12 +203,14 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
             "token" : token}
 
 
+class ConfirmBase(BaseModel):
+    token: str
+
 @router.put("/confirm-user-account")
-async def confirm_user_account(token: str, db: Session = Depends(get_db)):
+async def confirm_user_account(info: ConfirmBase, db: Session = Depends(get_db)):
     user_service = UserService(db)
     token_service = EmailConfirmationTokenService(db)
-    
-    email = await token_service.verify_token(token)
+    email = await token_service.verify_token(info.token)
 
     user = user_service.get_user_by_email(email)
     if not user:
@@ -215,6 +219,6 @@ async def confirm_user_account(token: str, db: Session = Depends(get_db)):
     user_update = schemas.UserUpdate(is_active=True)
     user_service.update_user(user.id, user_update)
     token_update = schemas.EmailConfirmationTokenUpdate(is_used=True)
-    token_service.update_token(token, token_update)
+    token_service.update_token(info.token, token_update)
 
     return {"message" : "User account activated successfully"}

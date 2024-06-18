@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Confirmation</title>
+</head>
+<body>
+    <div>
+        <button id="confirmar">Confirm your account</button>
+    </div>
+
+    <script>
+        function getQueryParams(param) {
+            const urlParams = new URLSearchParams(window.location.search)
+            return urlParams.get(param)
+        }
+
+        let confirmacion = document.getElementById('confirmar')
+        confirmacion.addEventListener('click', async () => {
+            const token = getQueryParams('token')
+            const response = await fetch('http://localhost:8000/confirm-user-account', {
+                method: 'PUT',
+                headers: {
+                    "Content-Type" : "application/json"
+                },
+                body: JSON.stringify({token : token})
+            })
+
+            if (response.ok) { alert("Your account has been successfully confirmed.")}
+            else {alert("There has been an error confirming your account.")}
+        })
+    </script>
+</body>
+</html>

@@ -13,7 +13,7 @@ from ..database import get_db
 from ..models import User
 
 
-router = APIRouter()
+router = APIRouter(tags=["Meeting scheduling"])
 
 # ------------------------------------------ ROUTE FOR SCHEDULING MEETINGS ------------------------------------------
 @router.post("/schedule-meeting/")

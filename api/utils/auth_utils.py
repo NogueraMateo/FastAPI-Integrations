@@ -59,7 +59,7 @@ async def create_access_token(data: dict, expires_delta: Optional[timedelta]= No
         raise Exception(f"Error encoding JWT: {str(e)}")
     
 
-async def get_current_user(token: str = Depends(oauth2), db: Session= Depends(get_db)) -> models.User:
+def get_current_user(token: str = Depends(oauth2), db: Session= Depends(get_db)) -> models.User:
     """
     Retrieve the current authenticated user from the database using the provided JWT token.
 
@@ -91,3 +91,40 @@ async def get_current_user(token: str = Depends(oauth2), db: Session= Depends(ge
         raise credentials_exception
     
     return user
+
+def get_current_active_user(current_user: models.User = Depends(get_current_user)):
+    """
+    Retrieve the authenticated and active user from the database
+
+    Args:
+        current_user (User) : Provided by the get_current_user function
+
+    Returns:
+        models.User: The active and authenticated user object.
+
+    Raises:
+        HTTPException: If the user is not active
+    """
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+def get_current_admin_user(current_user: models.User = Depends(get_current_active_user)):
+    """
+    Retrieve user if it has the ADMIN role
+
+    Args:
+        current_user (User) : Provided by the get_current_active_user function
+
+    Returns:
+        models.User: The active, authenticated and ADMIN user object.
+
+    Raises:
+        HTTPException: If the user has not ADMIN role
+    """
+    if current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not permitted"
+        )
+    return current_user

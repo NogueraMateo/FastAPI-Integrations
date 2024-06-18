@@ -13,7 +13,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Form, Re
 from sqlalchemy.orm import Session
 
 
-router= APIRouter()
+router= APIRouter(tags=["Password Recovery"])
 
 
 @router.get("/password-recovery/{email}")
@@ -51,7 +51,7 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
             "token" : password_reset_token}
 
 
-@router.put("/reset-password/")
+@router.put("/reset-password")
 async def reset_password(info: ResetPasswordFields, db: Session = Depends(get_db)):
     token_service = PasswordResetTokenService(db)
     user_service = UserService(db)
