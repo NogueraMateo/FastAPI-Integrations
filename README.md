@@ -21,7 +21,7 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
 - In order to assure that Google Oauth works as expected, you'll need to configure a project in [Google Cloud Console](https://console.cloud.google.com/welcome/new?_ga=2.117443785.-1160546546.1718048896). 
 
 1. Create a new project
-    <img src="/assets/Step1.png" width="300" height="100">
+    <img src="/assets/Step1.png" width="325" height="175">
     <img src="/assets/Step2.png" width="300" height="100">
     <img src="/assets/Step3.png" width="300" height="100">
     <img src="/assets/Step4.png" width="300" height="100">
