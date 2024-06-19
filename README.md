@@ -20,27 +20,26 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
 
 - In order to assure that Google Oauth works as expected, you'll need to configure a project in [Google Cloud Console](https://console.cloud.google.com/welcome/new?_ga=2.117443785.-1160546546.1718048896). 
 
-1. Create a new project<br>
-    <img src="/assets/Step1.png" width="340" height="175">
-    <img src="/assets/Step2.png" width="340" height="175">
-    <img src="/assets/Step3.png" width="340" height="175">
-    <img src="/assets/Step4.png" width="340" height="175">
+1. Create a new project
+    ![Step 1](/assets/Step1.png)
+    ![Step 2](/assets/Step2.png)
+    ![Step 3](/assets/Step3.png)
+    ![Step 4](/assets/Step4.png)
 
- 2. Setting up Oauth consent screen<br>
-    <img src="/assets/Step5.png" width="340" height="175">
-    <img src="/assets/Step6.png" width="340" height="175">
-    <img src="/assets/Step7.png" width="340" height="175">
-    <img src="/assets/Step8.png" width="340" height="175">
-    <img src="/assets/Step9.png" width="340" height="175">
-    <img src="/assets/Step10.png" width="340" height="175"><br>
-In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**. <br>
-    <img src="/assets/Step11.png" width="340" height="175">
+ 2. Setting up Oauth consent screen
+    ![Step 5](/assets/Step5.png)
+    ![Step 6](/assets/Step6.png)
+    ![Step 7](/assets/Step7.png)
+    ![Step 8](/assets/Step8.png)
+    ![Step 9](/assets/Step9.png)
+    ![Step 10](/assets/Step10.png)
+In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**. 
+    ![Step 11](/assets/Step11.png)
 
-3. Getting the credentials<br>
-    <img src="/assets/Step12.png" width="340" height="175">
-    <img src="/assets/Step13.png" width="340" height="175">
-    <img src="/assets/Step14.png" width="340" height="175">
-    <img src="/assets/Emphasis.png" width="370" height="175">
-    <img src="/assets/Step15.png" width="340" height="175">
+3. Getting the credentials
+    ![Step 12](/assets/Step12.png)
+    ![Step 13](/assets/Step13.png)
+    ![Step 14](/assets/Step14.png)
+    ![Step 15](/assets/Step15.png)
 Remember these credentials because you're going to need them later
-    <img src="/assets/Step16.png" width="340" height="175">
+    ![Step 16](/assets/Step16.png)
