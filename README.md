@@ -32,9 +32,9 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
     <img src="/assets/Step7.png" width="340" height="175">
     <img src="/assets/Step8.png" width="340" height="175">
     <img src="/assets/Step9.png" width="340" height="175">
-    <img src="/assets/Step10.png" width="340" height="175">
-In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**. 
-    ![Step 11](/assets/Step11.png)
+    <img src="/assets/Step10.png" width="340" height="175"><br>
+In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**. <br>
+    <img src="/assets/Step11.png" width="340" height="175">
 
 3. Getting the credentials<br>
     <img src="/assets/Step12.png" width="340" height="175">
