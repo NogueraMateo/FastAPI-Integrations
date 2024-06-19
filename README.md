@@ -33,15 +33,37 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
     ![Step 8](/assets/Step8.png)
     ![Step 9](/assets/Step9.png)
     ![Step 10](/assets/Step10.png)
-`In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**.`
+In this step, keep in mind that `**only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**.`
     ![Step 11](/assets/Step11.png)
 
 4. Getting the credentials
     ![Step 12](/assets/Step12.png)
     ![Step 13](/assets/Step13.png)
     ![Step 14](/assets/Step14.png) 
-`**The Authorized redirect URIs must be the same url that the one in this part of the code **`
-    ![Emphasis](/assets/Emphasis.png)
+
     ![Step 15](/assets/Step15.png)
+    `**The Authorized redirect URIs must be the same url that the one in this part of the code **`
+    ![Emphasis](/assets/Emphasis.png)
 Remember these credentials because you're going to need them later
     ![Step 16](/assets/Step16.png)
+
+## Setting up the Zoom account application
+
+- Also you'll need to create a zoom application, specifically a Server-to-Server OAuth. This step is neccessary to get the zoom
+credentials to make sure the meeting scheduling works as expected. 
+
+You can easily get the credentials by following the [Zoom Documentation](https://developers.zoom.us/docs/internal-apps/)
+After you have created the app, you can go to your [apps](https://marketplace.zoom.us/user/build) and click on the project you
+just created. 
+
+There you shall see a screen like this
+    ![Zoom app Dashboard](/assets/ZoomApp.png)
+
+Keep these credentials at hand because you'll need them later.
+
+## Setting up the `.env` file
+
+
+
+
+
