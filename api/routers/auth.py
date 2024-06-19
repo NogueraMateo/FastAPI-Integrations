@@ -143,7 +143,7 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
     response.set_cookie(
         key="access_token",
         value=access_token,
-        secure=False,  # Debe ser True en producción con HTTPS
+        secure=False,  # Must be True in production with HTTPS
         samesite='Lax',
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
