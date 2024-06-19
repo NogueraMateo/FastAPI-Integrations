@@ -20,13 +20,13 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
 
 - In order to assure that Google Oauth works as expected, you'll need to configure a project in [Google Cloud Console](https://console.cloud.google.com/welcome/new?_ga=2.117443785.-1160546546.1718048896). 
 
-1. Create a new project
+1. Create a new project<br>
     <img src="/assets/Step1.png" width="340" height="175">
     <img src="/assets/Step2.png" width="340" height="175">
     <img src="/assets/Step3.png" width="340" height="175">
     <img src="/assets/Step4.png" width="340" height="175">
 
- 2. Setting up Oauth consent screen
+ 2. Setting up Oauth consent screen<br>
     <img src="/assets/Step5.png" width="340" height="175">
     <img src="/assets/Step6.png" width="340" height="175">
     <img src="/assets/Step7.png" width="340" height="175">
@@ -36,7 +36,7 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
 In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**. 
     ![Step 11](/assets/Step11.png)
 
-3. Getting the credentials
+3. Getting the credentials<br>
     <img src="/assets/Step12.png" width="340" height="175">
     <img src="/assets/Step13.png" width="340" height="175">
     <img src="/assets/Step14.png" width="340" height="175">
