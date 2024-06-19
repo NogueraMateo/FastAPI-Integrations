@@ -74,8 +74,4 @@ async def schedule_meeting(
     await email_service.send_meeting_invitations_to_users(current_user.email, meeting_info)
     await email_service.send_meeting_invitations_to_advisors(advisor.email, meeting_info, current_user)
 
-    return {
-        "message": "Meeting scheduled successfully",
-        "meeting_id": new_meeting.id,
-        "join_url": meeting_info.get('join_url')
-    }
+    return new_meeting

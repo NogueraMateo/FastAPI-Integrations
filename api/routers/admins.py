@@ -26,6 +26,12 @@ async def create_new_account(user_create: schemas.UserCreateByAdmin, current_use
     return admin_service.create_user(user_create)
 
 
+@router.delete("/admin/delete-user-account/{user_id}", response_model= schemas.User)
+async def delete_user_account(user_id: int, current_user: models.User= Depends(get_current_admin_user), db: Session = Depends(get_db)):
+    admin_service = AdminService(db)
+    return admin_service.delete_user(user_id)
+
+
 @router.get("/admin/read-users", response_model= List[schemas.User])
 async def read_users(current_user: models.User = Depends(get_current_admin_user), db: Session = Depends(get_db)):
     return db.query(models.User).filter().all()

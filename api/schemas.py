@@ -105,7 +105,7 @@ class EmailConfirmationTokenUpdate(BaseModel):
 class EmailConfirmationToken(EmailConfirmationTokenBase):
     id: int
     is_used: bool
-    user: 'User'
+    user: 'UserBase'
 
     class Config:
         from_attributes = True
@@ -135,6 +135,8 @@ class MeetingBase(BaseModel):
     zoom_meeting_id: Optional[str] = None
     join_url: Optional[str] = None
     
+    class Config:
+        from_attributes = True
 
 class MeetingCreate(BaseModel):
     start_time: datetime
@@ -143,7 +145,7 @@ class MeetingCreate(BaseModel):
 class Meeting(MeetingBase):
     id: int
     user_id:int
-    advisor: Advisor
+    advisor_id: int
     topic: str
 
     class Config:
@@ -155,7 +157,7 @@ class User(UserBase):
     id: int
     is_active: bool
     role: str
-    google_access_token: str
+    google_access_token: Optional[str] = None
     meetings: List[Meeting] = []
     reset_tokens: List[PasswordResetToken] = []
     email_confirmation_tokens: List[EmailConfirmationToken] = []

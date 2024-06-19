@@ -69,11 +69,13 @@ class MeetingService:
             user_id=user_id,
             advisor_id=advisor_id,
             start_time=meeting_info['start_time'],
+            topic= meeting_info["topic"],
             zoom_meeting_id=meeting_info['id'],
             join_url=meeting_info['join_url']
         )
         self.db.add(new_meeting)
         self.db.commit()
+        self.db.refresh(new_meeting)
         return new_meeting
 
 
