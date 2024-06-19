@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from ..utils.auth_utils import get_current_user
 
 from datetime import datetime, timezone
-from ..schemas import MeetingCreate, UserUpdate
+from ..schemas import MeetingCreate, UserUpdate, Meeting
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import User
@@ -16,12 +16,34 @@ from ..models import User
 router = APIRouter(tags=["Meeting scheduling"])
 
 # ------------------------------------------ ROUTE FOR SCHEDULING MEETINGS ------------------------------------------
-@router.post("/schedule-meeting/")
+@router.post("/schedule-meeting/",response_model=Meeting)
 async def schedule_meeting(
     meeting_data: MeetingCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Schedule a new meeting with an advisor.
+    
+    This endpoint allows a user to schedule a new meeting with an available advisor. 
+    The user must not have scheduled a meeting in the past 7 days. If successful, 
+    the meeting details will be sent via email to both the user and the advisor.
+
+    Args:
+        meeting_data (schemas.MeetingCreate): Data required to create a new meeting.
+            - start_time (str): The start time of the meeting in ISO 8601 format. Example: "2024-06-20T12:20"
+            - topic (str): The topic of the meeting. Example: "Extra info about the services the company offers."
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+        current_user (models.User, optional): The currently authenticated user. Defaults to Depends(get_current_user).
+
+    Returns:
+        dict: A dictionary containing the message, meeting ID, and join URL.
+
+    Raises:
+        HTTPException: If the user is not authenticated (status code 401).
+        HTTPException: If the user has scheduled a meeting in the past 7 days (status code 400).
+        HTTPException: If no advisors are available (status code 404).
+    """
     meeting_service = MeetingService(db)
     user_service = UserService(db)
     email_service = EmailService()

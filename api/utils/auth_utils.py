@@ -92,7 +92,8 @@ def get_current_user(token: str = Depends(oauth2), db: Session= Depends(get_db))
     
     return user
 
-def get_current_active_user(current_user: models.User = Depends(get_current_user)):
+
+def get_current_active_user(current_user: models.User = Depends(get_current_user)) -> models.User:
     """
     Retrieve the authenticated and active user from the database
 
@@ -109,7 +110,7 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-def get_current_admin_user(current_user: models.User = Depends(get_current_active_user)):
+def get_current_admin_user(current_user: models.User = Depends(get_current_active_user)) -> models.User:
     """
     Retrieve user if it has the ADMIN role
 

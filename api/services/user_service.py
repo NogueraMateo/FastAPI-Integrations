@@ -96,3 +96,28 @@ class UserService:
             exists_phone_number = self.get_user_by_phone_number(user_update.phone_number)
             if exists_phone_number:
                 raise HTTPException(status_code=400, detail="Phone number already registered")
+
+
+class AdminService(UserService):
+    def __init__(self, db: Session):
+        super().__init__(db)
+
+    def create_user(self, user: schemas.UserCreateByAdmin) -> models.User:
+        data = user.model_dump(exclude_unset=True)
+        
+        password_hash = crypt.hash(user.plain_password) if "plain_password" in data else None
+
+        db_user = models.User(
+            first_name= user.first_name,
+            second_name= user.second_name,
+            lastname= user.lastname,
+            email= user.email,
+            phone_number= user.phone_number,
+            document= user.document,
+            password_hash= password_hash,
+            role= user.role,
+            google_access_token= user.google_access_token)
+        self.db.add(db_user)
+        self.db.commit()
+        self.db.refresh(db_user)
+        return db_user

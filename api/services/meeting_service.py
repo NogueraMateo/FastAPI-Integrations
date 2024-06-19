@@ -39,7 +39,7 @@ class MeetingService:
         return response.json().get('access_token')
 
 
-    def create_meeting(self, access_token: str, start_time: datetime, topic: str):
+    def create_meeting(self, access_token: str, start_time: datetime, topic: str) -> json:
         start_time = start_time.isoformat()
         url = f"https://api.zoom.us/v2/users/me/meetings"
         headers = {
@@ -50,7 +50,7 @@ class MeetingService:
             "topic": topic,
             "type": 2,
             "start_time": start_time,
-            "duration": "30",  # Duración en minutos
+            "duration": "30",  # Duration in minutes
             "timezone": "America/Bogota",
             "settings": {
                 "join_before_host": True,

@@ -42,6 +42,11 @@ class UserCreate(UserBase):
         if not v:  # Esto verificará tanto None como strings vacíos
             raise ValueError('Document field must be provided')
         return v
+
+
+class UserCreateByAdmin(UserCreate):
+    role: Optional[str]
+
     
 # Schema expected when updating an user
 class UserUpdate(BaseModel):
