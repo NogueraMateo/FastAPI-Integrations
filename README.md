@@ -40,6 +40,8 @@ In this step, keep in mind that **only the gmail accounts you add here are the o
     ![Step 12](/assets/Step12.png)
     ![Step 13](/assets/Step13.png)
     ![Step 14](/assets/Step14.png)
+#### The Authorized redirect URIs must be the same url that the one in this part of the code 
+    ![Emphasis](/assets/Emphasis.png)
     ![Step 15](/assets/Step15.png)
 Remember these credentials because you're going to need them later
     ![Step 16](/assets/Step16.png)
