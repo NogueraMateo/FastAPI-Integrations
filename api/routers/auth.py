@@ -138,7 +138,7 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
         else:
             user_service.update_user(user_db.id, schemas.UserUpdate(google_access_token=google_access_token))
     
-    access_token = await create_access_token(data={"sub": user_db.email})
+    access_token = await create_access_token(data={"sub": user_email})
 
     response.set_cookie(
         key="access_token",
@@ -151,7 +151,7 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
     return {
         "access_token": access_token,
         "token-type": "Bearer",
-        "email": user_db.email
+        "email": user_email
     }
 
 
