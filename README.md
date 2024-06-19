@@ -33,17 +33,14 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
     ![Step 8](/assets/Step8.png)
     ![Step 9](/assets/Step9.png)
     ![Step 10](/assets/Step10.png)
-     <br>
 `In this step, keep in mind that **only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**.`
- <br>
     ![Step 11](/assets/Step11.png)
 
 4. Getting the credentials
     ![Step 12](/assets/Step12.png)
     ![Step 13](/assets/Step13.png)
-    ![Step 14](/assets/Step14.png) <br>
+    ![Step 14](/assets/Step14.png) 
 `**The Authorized redirect URIs must be the same url that the one in this part of the code **`
- <br>
     ![Emphasis](/assets/Emphasis.png)
     ![Step 15](/assets/Step15.png)
 Remember these credentials because you're going to need them later
