@@ -40,7 +40,7 @@ In this step, keep in mind that **only the gmail accounts you add here are the o
     <img src="/assets/Step12.png" width="340" height="175">
     <img src="/assets/Step13.png" width="340" height="175">
     <img src="/assets/Step14.png" width="340" height="175">
-    <img src="/assets/Emphasis.png" width="340" height="175">
+    <img src="/assets/Emphasis.png" width="370" height="175">
     <img src="/assets/Step15.png" width="340" height="175">
 Remember these credentials because you're going to need them later
     <img src="/assets/Step16.png" width="340" height="175">
