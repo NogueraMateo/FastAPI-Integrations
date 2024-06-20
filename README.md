@@ -5,10 +5,51 @@ The idea of this project came out of the need of a company that offers different
 
 In order to avoid face-to-face attendance, I implemented a virtual meeting system using Zoom API to generate zoom meeting links. The meetings are supposed to be attended by virtual assitants on the day and time set by the user. 
 
+## TECHNOLOGIES
+- Python
+- FastAPI
+- Fast-mail
+- SQLAlchemy
+- PostgreSQL
+- Git & Github
+- Docker
+
+## Features
+
+### User Authentication and Authorization
+- **JWT Authentication:** Secure login and token-based authentication for users.
+- **Google OAuth 2.0:** Allows users to log in and register using their Google accounts.
+
+### User Management
+- **User Registration:** Create new user accounts with email verifications.
+- **User Login:** Secure user login with JWT tokens.
+- **Password Reset:** Users can reset their passwords via email links, in case they have forgotten their passwords.
+- **Email Confirmation:** Users must confirm their email address to activate their accounts.
+
+### Role-Based Access Control (RBAC)
+- **Admin Roles:** Admin users have elevated privileges and can manage other users.
+- **User Roles:** Regular users have limited access compared to admin users.
+
+### Meeting Scheduling
+- **Zoom Integration:** Schedule virtual meetings using the Zoom API.
+- **Email Invitations:** Automatic email invitations sent to users and advisors with meeting details.
+- **Meeting Management:** Users can view and manage their scheduled meetings.
+
+### Rate Limiting 
+- **Login Attempts Limiting:** Protects against brute-force attacks by limiting login attempts using redis.
+- **Password Reset Attempts Limiting:** Protects against spam and server overloading by several requests.
+
+### API Documentation
+- **Swagger UI:** Interactive API documentation available at 'http://localhost:8000/docs'
+
+### Deployment and Scalability
+- **Dockerized Setup:** Easily deploy the application using Docker and Docker Compose.
+- **Environment Configuration:** Use environment variables to configure the application securely.
+
 # GETTING STARTED
 Here are the steps to follow so that you can test this REST-API on your local machine.
 
-- Make sure you have **Docker** and **Docker Compose** installed in your PC if you are using Windows OS, make sure you have **Docker Desktop** installed.
+- Make sure you have **Docker** and **Docker Compose** installed in your PC. If you are using Windows OS, make sure you have **Docker Desktop** installed.
     - You can download Docker Desktop by clicking [here.](https://www.docker.com/products/docker-desktop/)
 
 - Go to your terminal and make a git clone of this repository. 
@@ -49,7 +90,7 @@ Remember these credentials because you're going to need them later
 
 ## Setting up the Zoom account application
 
-- Also you'll need to create a zoom application, specifically a Server-to-Server OAuth. This step is neccessary to get the zoom
+You'll also need to create a zoom application, specifically a Server-to-Server OAuth. This step is neccessary to get the zoom
 credentials to make sure the meeting scheduling works as expected. 
 
 You can easily get the credentials by following the [Zoom Documentation](https://developers.zoom.us/docs/internal-apps/)
