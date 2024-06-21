@@ -142,6 +142,9 @@ class MeetingCreate(BaseModel):
     start_time: datetime
     topic: str
 
+class MeetingUpdate(BaseModel):
+    start_time: datetime
+
 class Meeting(MeetingBase):
     id: int
     user_id:int

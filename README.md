@@ -1,9 +1,8 @@
 # FULL-FEATURED-BACKEND-APPLICATION
-Full Featured Backend Application, using FastAPI, SQLAlchemy and PostgreSQL. Performing user Authentication and Authorization using JWT along with Google Oauth 2.0 and integration with Zoom API for scheduling virtual meetings.
+Welcome to the Full Featured Backend Application! This project leverages the power of FastAPI, SQLAlchemy, and PostgreSQL to create a robust and scalable backend. It features user authentication and authorization using JWT, integrates Google OAuth 2.0 for seamless login experiences, and connects with the Zoom API to schedule virtual meetings effortlessly.
 
-The idea of this project came out of the need of a company that offers different services (web development, mobile development, marketing support, accounting support, etc,) to give extra information to those users interested in acquiring their services. 
-
-In order to avoid face-to-face attendance, I implemented a virtual meeting system using Zoom API to generate zoom meeting links. The meetings are supposed to be attended by virtual assitants on the day and time set by the user. 
+# Why this project?
+In today's fast-paced digital world, companies need to provide quick and efficient ways for users to access their services. This project addresses that need by enabling virtual consultations, reducing the need for physical meetings, and providing a seamless experience for both users and service providers.
 
 ## TECHNOLOGIES
 - Python
@@ -11,8 +10,8 @@ In order to avoid face-to-face attendance, I implemented a virtual meeting syste
 - Fast-mail
 - SQLAlchemy
 - PostgreSQL
-- Git & Github
 - Docker
+- Git & Github
 
 ## FEATURES
 
@@ -47,7 +46,8 @@ In order to avoid face-to-face attendance, I implemented a virtual meeting syste
 - 🔧 **Environment Configuration:** Use environment variables to configure the application securely.
 
 # GETTING STARTED
-Here are the steps to follow so that you can test this REST-API on your local machine.
+Follow the steps below to set up and run this project on your local machine. Ensure you have the necessary prerequisites.
+Detailed instructions are provided to help you configure and run the application smoothly.
 
 - Make sure you have **Docker** and **Docker Compose** installed in your PC. If you are using Windows OS, make sure you have **Docker Desktop** installed.
     - You can download Docker Desktop by clicking [here.](https://www.docker.com/products/docker-desktop/)
@@ -74,7 +74,7 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
     ![Step 8](/assets/Zoom-Tuto/Step8.png)
     ![Step 9](/assets/Zoom-Tuto/Step9.png)
     ![Step 10](/assets/Zoom-Tuto/Step10.png)
-In this step, keep in mind that `**only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API**.`
+In this step, keep in mind that **`only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API.`**
     ![Step 11](/assets/Zoom-Tuto/Step11.png)
 
 4. Getting the credentials
@@ -83,7 +83,7 @@ In this step, keep in mind that `**only the gmail accounts you add here are the 
     ![Step 14](/assets/Zoom-Tuto/Step14.png) 
 
     ![Step 15](/assets/Zoom-Tuto/Step15.png)
-    `**The Authorized redirect URIs must be the same url that the one in this part of the code **`
+    **`The Authorized redirect URIs must be the same url that the one in this part of the code `**
     ![Emphasis](/assets/Zoom-Tuto/Emphasis.png)
 Remember these credentials because you're going to need them later
     ![Step 16](/assets/Zoom-Tuto/Step16.png)
@@ -150,7 +150,7 @@ You can generate it using this command in the terminal
 ```bash
 openssl rand -hex 32
 ```
-As a result, it'll generate a long string like this `**210b48bdfe0d703e820b93361e3178add9f18af8d0fadfecdd508446a780cc29**`.
+As a result, it'll generate a long string like this **`210b48bdfe0d703e820b93361e3178add9f18af8d0fadfecdd508446a780cc29`**.
 I suggest, to generate a different string for each Secret Key and replace it up there.
 
 ```ini

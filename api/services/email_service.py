@@ -7,7 +7,8 @@ from ..models import Advisor, User
 from pydantic import EmailStr, BaseModel
 from typing import Optional
 from ..services.token_service import EmailConfirmationTokenService, PasswordResetTokenService
-from ..config.email_messages import confirmation_message, reset_message
+from ..config.email_messages import confirmation_message, reset_message, user_invitation_message, advisor_invitation_message, user_reschedule_message, advisor_reschedule_message
+
 
 class EmailService:
 
@@ -30,12 +31,9 @@ class EmailService:
         # Format datetime for display
         formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
         message = MessageSchema(
-            subject= "Invitación a Reunión de Zoom",
+            subject= "Invitation to Zoom Meeting",
             recipients= [email_to],
-            body= f"""
-            <h3>¡Hola!, agendaste una reunión de Zoom para asesoría.</h3><br><br>
-            <h4>Fecha y hora: {formatted_time}</h4><br><br>
-            <p>Únete a la reunión Zoom haciendo clic en el siguiente enlace: {meeting_info['join_url']}</p>""",
+            body= user_invitation_message(formatted_time, meeting_info.get("join_url")),
             subtype= "html"
         )
         fm = FastMail(conf)
@@ -56,21 +54,42 @@ class EmailService:
         """
 
         # Parse ISO 8601 date and time to a datetime object
-        utc_datetime = parser.parse(meeting_info["start_time"])
+        utc_datetime = parser.parse(meeting_info.get("start_time"))
 
         local_datetime = utc_datetime - timedelta(hours=5)
 
         # Format datetime for display
         formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
         message = MessageSchema(
-            subject= "Nueva reunión de Zoom agendadada",
+            subject= "New Zoom Meeting Scheduled",
             recipients= [email_to],
-            body= f"""
-            <h3>¡Hola!, el usuario {current_user.first_name} {current_user.lastname} ha agendado una reunión de zoom contigo.</h3><br><br>
-            <h4>Fecha y hora: {formatted_time}</h4><br><br>
-            <h4>Motivo: {meeting_info["topic"]} </h4>
-            <p>Únete a la reunión Zoom haciendo clic en el siguiente enlace: {meeting_info['join_url']}</p>""",
+            body= advisor_invitation_message(formatted_time, meeting_info.get("join_url"), current_user.first_name, current_user.lastname, meeting_info.get("topic")),
             subtype= "html"
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message)
+
+
+    async def send_user_reschedule_message(self, email_to: EmailStr, new_start_time: datetime, join_url: str):
+        local_datetime = new_start_time
+        formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
+        message = MessageSchema(
+            subject= "Zoom Meeting Rescheduled",
+            recipients= [email_to],
+            body= user_reschedule_message(formatted_time, join_url),
+            subtype='html'
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message)
+
+    async def send_advisor_reschedule_message(self, email_to: EmailStr, new_start_time: datetime, join_url: str, user_first_name: str, user_last_name: str, topic: str):
+        local_datetime = new_start_time
+        formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
+        message = MessageSchema(
+            subject= "Zoom Meeting Rescheduled",
+            recipients= [email_to],
+            body= advisor_reschedule_message(formatted_time, join_url, topic, user_first_name, user_last_name),
+            subtype='html'
         )
         fm = FastMail(conf)
         await fm.send_message(message)
@@ -89,7 +108,7 @@ class EmailService:
         """
 
         message = MessageSchema(
-            subject="Confirmación de tu cuenta",
+            subject="Account Confirmation",
             recipients=[email_to],
             body=confirmation_message(token),
             subtype="html"
@@ -110,7 +129,7 @@ class EmailService:
             None
         """
         message = MessageSchema(
-            subject="Recuperación de contraseña",
+            subject="Password Reset",
             recipients=[email_to],
             body=reset_message(token),
             subtype="html"

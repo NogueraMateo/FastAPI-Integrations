@@ -44,7 +44,7 @@ oauth.register(
 router = APIRouter(tags=["Login and Registration"])
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses= True)
 
-@router.post("/login")
+@router.post("/login", status_code= 201)
 async def login(
     response: Response,
     request: Request,

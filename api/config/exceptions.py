@@ -11,3 +11,9 @@ expired_token_exception = HTTPException(
         detail="Token has expired",
         headers={"WWW-Authenticate": "Bearer"}
     )
+
+class PatchMeetingError(Exception):
+    pass
+
+class DeleteMeetingError(Exception):
+    pass
