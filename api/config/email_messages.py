@@ -190,16 +190,16 @@ user_invitation_message = lambda formatted_time, join_url: f'''
 <body>
     <div class="container">
         <div class="header">
-            <h1>Invitación a Reunión de Zoom</h1>
+            <h1>Invitation to Zoom Meeting</h1>
         </div>
         <div class="content">
-            <p>¡Hola!, agendaste una reunión de Zoom para asesoría.</p>
-            <h4>Fecha y hora: {formatted_time}</h4>
-            <p>Únete a la reunión Zoom haciendo clic en el siguiente enlace:</p>
-            <a href="{join_url}" class="button">Unirse a la Reunión</a>
+            <p>Hi, you scheduled a Zoom meeting for consulting.</p>
+            <h4>Date and time: {formatted_time}</h4>
+            <p>Join the Zoom meeting by clicking on the link below:</p>
+            <a href="{join_url}" class="button">Join the Meeting</a>
         </div>
         <div class="footer">
-            <p>Si recibiste este mensaje por error, por favor ignora este correo electrónico.</p>
+            <p>If you received this message by mistake, please ignore this email.</p>
         </div>
     </div>
 </body>
@@ -260,17 +260,17 @@ advisor_invitation_message = lambda formatted_time, join_url, current_user_first
 <body>
     <div class="container">
         <div class="header">
-            <h1>Nueva reunión de Zoom agendadada</h1>
+            <h1>New Zoom meeting scheduled</h1>
         </div>
         <div class="content">
-            <p>¡Hola!, el usuario {current_user_first_name} {current_user_lastname} ha agendado una reunión de zoom contigo.</p>
-            <h4>Fecha y hora: {formatted_time}</h4>
+            <p>Hello, the user {current_user_first_name} {current_user_lastname} has scheduled a zoom meeting with you.</p>
+            <h4>Date and time: {formatted_time}</h4>
             <h4>Motivo: {topic}</h4>
-            <p>Únete a la reunión Zoom haciendo clic en el siguiente enlace:</p>
-            <a href="{join_url}" class="button">Unirse a la Reunión</a>
+            <p>Join the Zoom meeting by clicking on the link below:</p>
+            <a href="{join_url}" class="button">Join the Meeting</a>
         </div>
         <div class="footer">
-            <p>Si recibiste este mensaje por error, por favor ignora este correo electrónico.</p>
+            <p>If you received this message by mistake, please ignore this email.</p>
         </div>
     </div>
 </body>

@@ -31,4 +31,9 @@ MAIL_FROM= os.getenv('MAIL_FROM')
 # -------------------------- DATABASE CONFIGURATION --------------------------
 SQLALCHEMY_DATABASE_URL = os.getenv('SQLALCHEMY_DATABASE_URL')
 
+# -------------------------- ON STARTUP ADMIN USER AND ADVISOR --------------------------
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+ADMIN_PASSWORD_HASH = os.getenv('ADMIN_PASSWORD_HASH')
+ADVISOR_EMAIL = os.getenv('ADVISOR_EMAIL')
+ADVISOR_NAME = os.getenv('ADVISOR_NAME')
 

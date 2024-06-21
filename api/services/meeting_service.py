@@ -213,19 +213,3 @@ class MeetingService:
             return db_meeting
 
         raise DeleteMeetingError
-        
-
-    def delete_scheduled_meetings_from_user(self, user_id: int) -> None:
-        """
-        Delete all scheduled meetings for a user.
-
-        Args:
-            user_id (int): The ID of the user whose meetings are to be deleted.
-
-        Returns:
-            None
-        """
-        meetings_to_delete= self.db.query(models.Meeting).filter(models.Meeting.user_id == user_id).all()
-        for meeting in meetings_to_delete:
-            self.db.delete(meeting)
-        self.db.commit()

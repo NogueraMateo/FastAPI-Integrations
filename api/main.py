@@ -6,7 +6,7 @@ from . import models
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import password_reset, meetings, auth, admins
 from starlette.middleware.sessions import SessionMiddleware
-from .config.constants import GOOGLE_OAUTH_SECRET_KEY
+from .config.constants import GOOGLE_OAUTH_SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD_HASH, ADVISOR_EMAIL, ADVISOR_NAME
 from contextlib import asynccontextmanager
 
 models.Base.metadata.create_all(bind=engine)
@@ -15,14 +15,14 @@ models.Base.metadata.create_all(bind=engine)
 async def lifespan(app:FastAPI):
     db: Session = SessionLocal()
     try:
-        admin = db.query(models.User).filter(models.User.email == "drawingacc115@gmail.com").first()
-        advisor = db.query(models.Advisor).filter(models.Advisor.email == "mateo.edu.co@gmail.com").first()
+        admin = db.query(models.User).filter(models.User.email == ADMIN_EMAIL).first()
+        advisor = db.query(models.Advisor).filter(models.Advisor.email == ADVISOR_EMAIL).first()
         if not admin:
             admin = models.User(
                 first_name="Matheww", 
                 lastname="Drawer", 
-                email="drawingacc115@gmail.com", 
-                password_hash ='$2b$12$tOOtHr32DkiCAlnZa9F6UOASUvHo0vZlmMyYlvLxlttuqt7TvLyri',
+                email=ADMIN_EMAIL, 
+                password_hash =ADMIN_PASSWORD_HASH, # Password is admin123
                 is_active=True,
                 role='ADMIN'
             )
@@ -30,7 +30,7 @@ async def lifespan(app:FastAPI):
             db.commit()
         
         if not advisor:
-            advisor = models.Advisor(name= "Mateo Noguera", email="mateo.edu.co@gmail.com")
+            advisor = models.Advisor(name= ADVISOR_NAME, email=ADMIN_EMAIL)
             db.add(advisor)
             db.commit()
         yield
@@ -44,8 +44,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos los métodos
-    allow_headers=["*"],  # Permite todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],  
 )
 
 app.add_middleware(SessionMiddleware, secret_key= GOOGLE_OAUTH_SECRET_KEY)

@@ -180,5 +180,80 @@ GOOGLE_OAUTH_SECRET_CLIENT=your_google_oauth_secret_client
 GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
 ```
 
-In the **GOOGLE_OAUTH_SECRET_CLIENT** fill it with the Client Secret given when creating the project with Google Cloud Console.
-In the **GOOGLE_OAUTH_CLIENT_ID** fill it with the Clien ID given when creating the project with Google Cloud Console.
+- In the **GOOGLE_OAUTH_SECRET_CLIENT** fill it with the Client Secret given when creating the project with Google Cloud Console.
+- In the **GOOGLE_OAUTH_CLIENT_ID** fill it with the Clien ID given when creating the project with Google Cloud Console.
+
+```ini
+ADMIN_EMAIL=your_admin_email@example.com      
+ADMIN_PASSWORD_HASH=$2b$12$tOOtHr32DkiCAlnZa9F6UOASUvHo0vZlmMyYlvLxlttuqt7TvLyri
+ADVISOR_EMAIL=your_advisor_email@example.com
+ADVISOR_NAME=Your Advisor Name
+```
+
+- **ADMIN_EMAIL:** This is the email address that will be used for the default admin account created when the application starts. This account has administrative privileges and can manage other users and settings within the application.
+- **ADMIN_PASSWORD_HASH:** This is the hashed password for the default admin account. To ensure security, use a strong hashing algorithm such as bcrypt to hash the password before setting this variable. Do not use plain text passwords. You're free to use the one provided in the **`.env.example`**,
+the plain password is **admin123**
+- **ADVISOR_EMAIL:** This is the email address for the default advisor that will be available in the system. Advisors are users who can be assigned to meetings and provide services or consultations.
+- **ADVISOR_NAME:** This is the full name of the default advisor. It will be used to identify the advisor in the system and in communications with users.
+
+### Generating a Secure Password Hash
+To generate a secure password hash for the **`ADMIN_PASSWORD_HASH`** variable, you can use a tool like bcrypt. Here is an example of how to generate a bcrypt hash:
+
+```python
+from passlib.context import CryptContext
+
+# Create a hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Generate password hash
+password = "anotherpassword"
+password_hash = pwd_context.hash(password)
+
+print(password_hash)
+# Output: $2b$12$mw2oUt87EO.fxHVMT7Nzj.He1ld2Bw2rs7huwp099wiUta6OuyrVK
+```
+
+Replace `your_secure_password` with your desired password and use the resulting hash for the `ADMIN_PASSWORD_HASH` variable.
+
+## Running the Project with Docker
+
+Once you have configured the `.env` file, you can easily run the project using Docker. Follow these steps:
+
+1. **Build and Run the Docker Containers:**
+
+    Navigate to the project directory where the `docker-compose.yml` file is located and run the following command to build and start the containers:
+
+    ```bash
+    docker-compose up --build
+    ```
+    This command will build the Docker images and start the containers for the FastAPI application, PostgreSQL database, and any other services defined in the docker-compose.yml file.
+
+2. **Access the Application:**
+    Once the containers are up and running, you can access the FastAPI application in your web browser at:
+    ```bash
+    http://localhost:8000
+    ```
+
+    You can also access the interactive API documentation (Swagger UI) at:
+
+    ```bash
+    http://localhost:8000/docs
+    ```
+
+3. Stop the Docker Containers:
+
+    To stop the running Docker containers, press Ctrl + C in the terminal where the docker-compose up command is running. Alternatively, you can run the following command in the project directory:
+    ```bash
+    docker-compose down
+    ```
+
+    This command will stop and remove the containers defined in the docker-compose.yml file.
+
+## Cleaning Up the Database
+If you need to clean up the database and start fresh, you can remove the Docker volumes used by the PostgreSQL container. This will delete all data in the database. Run the following command:
+
+```bash
+docker-compose down -v
+```
+
+This command stops the containers and removes the volumes, allowing you to start with a clean database when you run docker-compose up again.
