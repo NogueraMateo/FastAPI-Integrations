@@ -51,8 +51,24 @@ async def login(
     form_data: OAuth2PasswordRequestForm= Depends(),
     db: Session= Depends(get_db)
     ):
-    '''Retrieves the data from the form, authenticates the user and generates an access token for it'''
+    """
+    Authenticate a user and issue an access token.
 
+    This endpoint authenticates a user using their email and password, and issues a JWT access token if the credentials are valid.
+
+    Args:
+        response (Response): The response object to set cookies.
+        request (Request): The request object to get the client's IP address.
+        form_data (OAuth2PasswordRequestForm): The form data containing the user's email and password.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A dictionary containing the access token, token type, and user's email.
+
+    Raises:
+        HTTPException: If the rate limit is exceeded (status code 429).
+        HTTPException: If the credentials are incorrect (status code 401).
+    """
     username = form_data.username
     client_ip = request.client.host
     identifier = f"{client_ip}:{username}"
@@ -93,12 +109,35 @@ async def login(
 
 @router.get("/login/google")
 async def login_google(request: Request):
+    """
+    Redirect the user to Google's OAuth 2.0 login page.
+
+    Args:
+        request (Request): The request object to get the current URL.
+
+    Returns:
+        RedirectResponse: A response redirecting the user to the Google OAuth 2.0 login page.
+    """
     url = request.url_for("auth")
     return await oauth.google.authorize_redirect(request, url)
 
 
 @router.get("/auth")
 async def auth(response: Response, request: Request, db: Session= Depends(get_db)):
+    """
+    Handle the callback from Google OAuth 2.0 and authenticate the user.
+
+    Args:
+        response (Response): The response object to set cookies.
+        request (Request): The request object containing the authorization response from Google.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A dictionary containing the access token, token type, and user's email.
+
+    Raises:
+        HTTPException: If the token could not be obtained from Google (status code 400).
+    """
     try:
         res = await oauth.google.authorize_access_token(request)
     except OAuthError as e:
@@ -157,16 +196,22 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
 
 @router.post("/register", status_code= 201)
 async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(get_db)):
-    '''User must provide:
-        - First name
-        - Second name (Optionally)
-        - Lastname
-        - Username
-        - Email
-        - Phone number
-        - Document
-        - Password '''
-    
+    """
+    Register a new user.
+
+    This endpoint registers a new user, generates an email confirmation token, and sends a confirmation email to the user.
+
+    Args:
+        user (schemas.UserCreate): The data required to create a new user.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A message confirming successful registration and the generated token.
+
+    Raises:
+        HTTPException: If the email, phone number, or document is already registered (status code 400).
+        HTTPException: If the password is less than 7 characters long (status code 400).
+    """
     user_service = UserService(db)
     token_service = EmailConfirmationTokenService(db)
     email_service = EmailService()
@@ -206,8 +251,21 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
 class ConfirmBase(BaseModel):
     token: str
 
-@router.put("/confirm-user-account")
+@router.patch("/confirm-user-account")
 async def confirm_user_account(info: ConfirmBase, db: Session = Depends(get_db)):
+    """
+    Confirm the user's account using the provided token.
+
+    Args:
+        info (ConfirmBase): The token required to confirm the user's account.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A message confirming that the user's account has been activated.
+
+    Raises:
+        HTTPException: If the user is not found (status code 404).
+    """
     user_service = UserService(db)
     token_service = EmailConfirmationTokenService(db)
     email = await token_service.verify_token(info.token)

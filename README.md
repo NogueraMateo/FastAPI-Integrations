@@ -59,7 +59,7 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
 
 ## Setting up the Google Cloud Console project
 
-- In order to assure that Google Oauth works as expected, you'll need to configure a project in [Google Cloud Console](https://console.cloud.google.com/welcome/new?_ga=2.117443785.-1160546546.1718048896). 
+To ensure that Google OAuth works as expected, you'll need to configure a project in [Google Cloud Console](https://console.cloud.google.com/welcome/new?_ga=2.117443785.-1160546546.1718048896). 
 
 1. Create a new project
     ![Step 1](/assets/Zoom-Tuto/Step1.png)
@@ -67,31 +67,31 @@ git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
     ![Step 3](/assets/Zoom-Tuto/Step3.png)
     ![Step 4](/assets/Zoom-Tuto/Step4.png)
 
- 2. Setting up Oauth consent screen
+ 2. Set up the OAuth consent screen
     ![Step 5](/assets/Zoom-Tuto/Step5.png)
     ![Step 6](/assets/Zoom-Tuto/Step6.png)
     ![Step 7](/assets/Zoom-Tuto/Step7.png)
     ![Step 8](/assets/Zoom-Tuto/Step8.png)
     ![Step 9](/assets/Zoom-Tuto/Step9.png)
     ![Step 10](/assets/Zoom-Tuto/Step10.png)
-In this step, keep in mind that **`only the gmail accounts you add here are the ones that are going to be able to log in when you're testing the API.`**
+In this step, keep in mind that **`only the Gmail accounts you add here are the ones that are going to be able to log in when you're testing the API.`**
     ![Step 11](/assets/Zoom-Tuto/Step11.png)
 
-4. Getting the credentials
+4. Get the credentials
     ![Step 12](/assets/Zoom-Tuto/Step12.png)
     ![Step 13](/assets/Zoom-Tuto/Step13.png)
     ![Step 14](/assets/Zoom-Tuto/Step14.png) 
 
     ![Step 15](/assets/Zoom-Tuto/Step15.png)
-    **`The Authorized redirect URIs must be the same url that the one in this part of the code `**
+    **`The Authorized redirect URIs must be the same url that the one in this part of the code. `**
     ![Emphasis](/assets/Zoom-Tuto/Emphasis.png)
-Remember these credentials because you're going to need them later
+Remember these credentials because you're going to need them later.
     ![Step 16](/assets/Zoom-Tuto/Step16.png)
 
 ## Setting up the Zoom account application
 
-You'll also need to create a zoom application, specifically a Server-to-Server OAuth. This step is neccessary to get the zoom
-credentials to make sure the meeting scheduling works as expected. 
+You'll also need to create a zoom application, specifically a Server-to-Server OAuth. This step is neccessary to get the Zoom
+credentials to ensure the meeting scheduling works as expected. 
 
 You can easily get the credentials by following the [Zoom Documentation](https://developers.zoom.us/docs/internal-apps/)
 After you have created the app, you can go to your [apps](https://marketplace.zoom.us/user/build) and click on the project you
@@ -104,8 +104,8 @@ Keep these credentials at hand because you'll need them later.
 
 ## Setting up the gmail account from which the e-mails will be sent
 
-To set this up, you must have access to the gmail account set up to send emails, such as a noreply@gmail.com or whatever the account is.
-Then you follow the following steps in order to generate a Password Application.
+To set this up, you must have access to the Gmail account set up to send emails, such as a noreply@gmail.com or whatever the account is.
+Then follow these steps to generate a Password Application.
 
 ![Step 1](/assets/Google-App-Tuto/GStep1.png)
 ![Step 2](/assets/Google-App-Tuto/GStep2.png)
@@ -116,7 +116,7 @@ Make sure you copy this password because you'll never see it again.
 
 ## Setting up the `.env` file
 
-Now the next step is to configure the **.env** file. As you can see in the repository, there is a .env.example file, and you must replace 
+The next step is to configure the **.env** file. As you can see in the repository, there is a **`.env.example`** file, and you must replace 
 some of the credentials and passwords we generated before.
 
 Create a new `.env` file and fill it with the following information:
@@ -145,13 +145,13 @@ GOOGLE_OAUTH_SECRET_KEY=your_google_oauth_secret_key
 ```
 
 Your secret keys could be any string, but it is better for the security of the API to generate a long and more secure string.
-You can generate it using this command in the terminal
+You can generate it using this command in the terminal:
 
 ```bash
 openssl rand -hex 32
 ```
 As a result, it'll generate a long string like this **`210b48bdfe0d703e820b93361e3178add9f18af8d0fadfecdd508446a780cc29`**.
-I suggest, to generate a different string for each Secret Key and replace it up there.
+I suggest, generating a different string for each Secret Key and replace it up there.
 
 ```ini
 # Zoom API Configuration
@@ -170,8 +170,8 @@ MAIL_PASSWORD=your_mail_password
 MAIL_FROM=your_mail_from_address
 ```
 
-In the **MAIL_USERNAME** and **MAIL_FROM** fill it with the gmail direction you used to create the password application to send the emails
-In the **MAIL_PASSWORD** fill it with the password Google gave you when you created the password application. 
+- In the **MAIL_USERNAME** and **MAIL_FROM** fill it with the gmail direction you used to create the password application to send the emails
+- In the **MAIL_PASSWORD** fill it with the password Google gave you when you created the password application. 
 
 
 ```ini

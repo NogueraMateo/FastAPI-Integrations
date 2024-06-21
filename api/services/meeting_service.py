@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from ..config.exceptions import PatchMeetingError, DeleteMeetingError
+from ..config.exceptions import PatchMeetingError, DeleteMeetingError, CreateMeetingError
 from datetime import datetime
 from typing import Optional
 from .. import models, schemas
@@ -13,8 +13,23 @@ import os
 load_dotenv()
 
 class MeetingService:
+    """
+    A service class for managing Zoom meetings and their database interactions.
+
+    Attributes:
+        db (Session): The database session.
+        ZOOM_CLIENT_ID (str): Zoom client ID from environment variables.
+        ZOOM_CLIENT_SECRET (str): Zoom client secret from environment variables.
+        ZOOM_ACCOUNT_ID (str): Zoom account ID from environment variables.
+    """
 
     def __init__(self, db: Session):
+        """
+        Initialize the MeetingService with a database session.
+
+        Args:
+            db (Session): The database session.
+        """
         self.db : Session = db
         self.ZOOM_CLIENT_ID: str = os.getenv('ZOOM_CLIENT_ID')
         self.ZOOM_CLIENT_SECRET= os.getenv('ZOOM_CLIENT_SECRET')
@@ -22,10 +37,25 @@ class MeetingService:
 
 
     def get_meeting_by_zoom_id(self, meeting_id: int) -> models.Meeting:
+        """
+        Retrieve a meeting from the database by its Zoom meeting ID.
+
+        Args:
+            meeting_id (int): The Zoom meeting ID.
+
+        Returns:
+            models.Meeting: The meeting with the given Zoom meeting ID.
+        """
         return self.db.query(models.Meeting).filter(models.Meeting.zoom_meeting_id == meeting_id).first()
 
 
     def get_meeting_access_token(self) -> str:
+        """
+        Retrieve an access token for the Zoom API.
+
+        Returns:
+            str: The access token for the Zoom API.
+        """
         url = 'https://zoom.us/oauth/token'
         credentials = f"{self.ZOOM_CLIENT_ID}:{self.ZOOM_CLIENT_SECRET}"
         encoded_credentials = base64.b64encode(credentials.encode()).decode('utf-8')  # Codifica las credenciales en base64
@@ -41,7 +71,24 @@ class MeetingService:
         return response.json().get('access_token')
 
 
-    def create_meeting(self, access_token: str, start_time: datetime, topic: str) -> json:
+    def create_meeting(self, start_time: datetime, topic: str, user_id: int, advisor_id: int) -> (models.Meeting, dict):
+        """
+        Create a new Zoom meeting and save it to the database.
+
+        Args:
+            start_time (datetime): The start time of the meeting.
+            topic (str): The topic of the meeting.
+            user_id (int): The ID of the user scheduling the meeting.
+            advisor_id (int): The ID of the advisor assigned to the meeting.
+
+        Returns:
+            tuple: The new meeting and meeting information from Zoom.
+
+        Raises:
+            CreateMeetingError: If the meeting could not be created.
+        """
+        
+        access_token = self.get_meeting_access_token()
         url = f"https://api.zoom.us/v2/users/me/meetings"
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -62,10 +109,41 @@ class MeetingService:
             }
         }
         response = requests.post(url, headers=headers, data=json.dumps(payload))
-        return response.json()
+
+        if response.status_code == 201:
+            meeting_info = response.json()
+            new_meeting = models.Meeting(
+                user_id=user_id,
+                advisor_id=advisor_id,
+                start_time=meeting_info['start_time'],
+                topic= meeting_info["topic"],
+                zoom_meeting_id=meeting_info['id'],
+                join_url=meeting_info['join_url']
+            )
+            self.db.add(new_meeting)
+            self.db.commit()
+            self.db.refresh(new_meeting)
+            return (new_meeting, meeting_info)
+        
+        raise CreateMeetingError
 
     
     def update_meeting(self, meeting_id: str, meeting_update: schemas.MeetingUpdate) -> models.Meeting | None:
+        """
+        Update an existing Zoom meeting and its database record.
+
+        Args:
+            meeting_id (str): The ID of the meeting to update.
+            meeting_update (schemas.MeetingUpdate): The updated meeting details.
+
+        Returns:
+            models.Meeting: The updated meeting.
+
+        Raises:
+            HTTPException: If the meeting ID is not found.
+            PatchMeetingError: If the meeting could not be updated.
+        """
+
         access_token = self.get_meeting_access_token()
         db_meeting: models.Meeting = self.get_meeting_by_zoom_id(meeting_id)
         if not db_meeting:
@@ -102,9 +180,21 @@ class MeetingService:
         
         raise PatchMeetingError
 
-
     
     def delete_meeting(self, meeting_id: str) -> models.Meeting | None:
+        """
+        Delete a Zoom meeting and its database record.
+
+        Args:
+            meeting_id (str): The ID of the meeting to delete.
+
+        Returns:
+            models.Meeting: The deleted meeting.
+
+        Raises:
+            DeleteMeetingError: If the meeting could not be deleted.
+        """
+
         access_token = self.get_meeting_access_token()
         url = f"https://api.zoom.us/v2/meetings/{meeting_id}"
         headers = {
@@ -123,24 +213,18 @@ class MeetingService:
             return db_meeting
 
         raise DeleteMeetingError
-
-
-    def save_meeting_to_db(self, user_id: int, advisor_id:int, meeting_info:dict) -> models.Meeting:
-        new_meeting = models.Meeting(
-            user_id=user_id,
-            advisor_id=advisor_id,
-            start_time=meeting_info['start_time'],
-            topic= meeting_info["topic"],
-            zoom_meeting_id=meeting_info['id'],
-            join_url=meeting_info['join_url']
-        )
-        self.db.add(new_meeting)
-        self.db.commit()
-        self.db.refresh(new_meeting)
-        return new_meeting
         
 
     def delete_scheduled_meetings_from_user(self, user_id: int) -> None:
+        """
+        Delete all scheduled meetings for a user.
+
+        Args:
+            user_id (int): The ID of the user whose meetings are to be deleted.
+
+        Returns:
+            None
+        """
         meetings_to_delete= self.db.query(models.Meeting).filter(models.Meeting.user_id == user_id).all()
         for meeting in meetings_to_delete:
             self.db.delete(meeting)

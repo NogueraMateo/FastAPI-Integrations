@@ -18,17 +18,32 @@ router= APIRouter(tags=["Password Recovery"])
 
 @router.get("/password-recovery/{email}")
 async def password_recovery(email: str, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+    """
+    Initiate a password recovery process by sending a reset password link to the user's email.
 
-    # Servicios necesarios
+    Args:
+        email (str): The email address of the user requesting password recovery.
+        background_tasks (BackgroundTasks): FastAPI background tasks for sending the email asynchronously.
+        request (Request): The HTTP request object to extract the client's IP address for rate limiting.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A message confirming that the password reset link has been sent, and the generated token.
+
+    Raises:
+        HTTPException: If the rate limit is exceeded (status code 429).
+        HTTPException: If the user does not exist (status code 404).
+    """
+    # Services
     user_service = UserService(db)
     token_service = PasswordResetTokenService(db)
     email_service = EmailService()
 
-    # Usando la IP del cliente como identificador o el email para el rate limiting
+    # Client IP as identifier for rate limiting
     client_ip = request.client.host
     identifier = f"{client_ip}:{email}"
     
-    # Configuramos los límites, 5 solicitudes por hora
+    # Rate limiting: 5 requests per hour
     if rate_limit_exceeded(redis_client, identifier, max_requests=5, period=3600):
         raise HTTPException(status_code=429, detail= "Rate limit exceeded, please try again later.")
 
@@ -36,23 +51,37 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
     if not user:
         raise HTTPException(status_code=404, detail="El usuario no existe.")
     
-    # Genera el token con alguna información útil y un tiempo de expiración
+    # Generate token with useful information and expiration time
     token_data = {"sub": email, "aud": "password-recovery"}
     password_reset_token, expiry = await token_service.create_token(
         data= token_data
     )
     
     token_service.insert_token(user_id=user.id, token= password_reset_token, expiry= expiry)
-
-    # Envía el email en segundo plano
     await email_service.send_reset_password_email(email, password_reset_token)
 
     return {"msg": "El enlace para restablecer tu contraseña ha sido enviado, por favor revisa tu email.",
             "token" : password_reset_token}
 
 
-@router.put("/reset-password")
+@router.patch("/reset-password")
 async def reset_password(info: ResetPasswordFields, db: Session = Depends(get_db)):
+    """
+    Reset the user's password using the provided token and new password.
+
+    Args:
+        info (ResetPasswordFields): The fields required for resetting the password, including the token, new password, and password confirmation.
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        dict: A message confirming that the password has been updated successfully.
+
+    Raises:
+        HTTPException: If the token is invalid or expired.
+        HTTPException: If the user is not found (status code 404).
+        HTTPException: If the passwords do not match (status code 400).
+        HTTPException: If the password is less than 7 characters long (status code 400).
+    """
     token_service = PasswordResetTokenService(db)
     user_service = UserService(db)
 

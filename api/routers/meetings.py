@@ -53,19 +53,12 @@ async def schedule_meeting(
     if not current_user.can_schedule_meeting():
         raise HTTPException(status_code=400, detail= "It has not been 7 days since you last scheduled a meeting") 
 
-    # Nos aseguramos de que hay advisors dispoibles 
+    # Ensuring there is available advisors
     advisor = await get_next_advisor(db)
     if not advisor:
         raise HTTPException(status_code=404, detail="No advisors available")
-    
-    # Obtener el access token para la API de Zoom
-    access_token = meeting_service.get_meeting_access_token()
 
-    # Crear la reunión en Zoom
-    meeting_info = meeting_service.create_meeting(access_token, meeting_data.start_time, meeting_data.topic)
-
-    # Guardar la reunión en la base de datos
-    new_meeting = meeting_service.save_meeting_to_db(current_user.id, advisor.id, meeting_info)
+    new_meeting, meeting_info = meeting_service.create_meeting(meeting_data.start_time, meeting_data.topic, current_user.id, advisor.id)
 
     user_update = schemas.UserUpdate(last_meeting_scheduled= datetime.now(timezone.utc))
     user_service.update_user(user_id=current_user.id, user_update= user_update)
@@ -77,11 +70,32 @@ async def schedule_meeting(
 
 
 @router.patch("/edit/meeting/{meeting_id}", response_model=schemas.Meeting)
-async def edit_scheduled_meeting(meeting_id: str, meeting_update: schemas.MeetingUpdate, admin_user: models.User = Depends(get_current_admin_user), db: Session = Depends(get_db)):
+async def edit_scheduled_meeting(
+    meeting_id: str, 
+    meeting_update: schemas.MeetingUpdate, 
+    admin_user: models.User = Depends(get_current_admin_user), 
+    db: Session = Depends(get_db)):
+    """
+    Edit a scheduled meeting.
+
+    This endpoint allows an admin user to edit the details of a scheduled meeting. 
+    After updating, the new meeting details will be sent via email to both the user and the advisor.
+
+    Args:
+        meeting_id (str): The ID of the meeting to be edited.
+        meeting_update (schemas.MeetingUpdate): The updated meeting details.
+        admin_user (models.User, optional): The currently authenticated admin user. Defaults to Depends(get_current_admin_user).
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        models.Meeting: The updated meeting details.
+
+    Raises:
+        HTTPException: If something goes wrong while updating the meeting (status code 400).
+    """
     meeting_service = MeetingService(db)
     try:
         updated_meeting: models.Meeting = meeting_service.update_meeting(meeting_id, meeting_update)
-        
     except:
         raise HTTPException(status_code=400, detail= "Something went wrong while updating the meeting")
 
@@ -94,7 +108,26 @@ async def edit_scheduled_meeting(meeting_id: str, meeting_update: schemas.Meetin
 
 
 @router.delete("/delete/meeting/{meeting_id}")
-async def delete_scheduled_meeting(meeting_id: str, admin_user: models.User = Depends(get_current_admin_user), db: Session = Depends(get_db)):
+async def delete_scheduled_meeting(
+    meeting_id: str, 
+    admin_user: models.User = Depends(get_current_admin_user), 
+    db: Session = Depends(get_db)):
+    """
+    Delete a scheduled meeting.
+
+    This endpoint allows an admin user to delete a scheduled meeting.
+
+    Args:
+        meeting_id (str): The ID of the meeting to be deleted.
+        admin_user (models.User, optional): The currently authenticated admin user. Defaults to Depends(get_current_admin_user).
+        db (Session, optional): The database session. Defaults to Depends(get_db).
+
+    Returns:
+        models.Meeting: The deleted meeting details.
+
+    Raises:
+        HTTPException: If something goes wrong while deleting the meeting (status code 400).
+    """
     meeting_service = MeetingService(db)
     try:
         deleted_meeting = meeting_service.delete_meeting(meeting_id)

@@ -11,6 +11,12 @@ from ..config.email_messages import confirmation_message, reset_message, user_in
 
 
 class EmailService:
+    """
+    A service class for managing email notifications.
+
+    Attributes:
+        conf (ConnectionConfig): The configuration for FastMail.
+    """
 
     async def send_meeting_invitations_to_users(self, email_to: EmailStr, meeting_info: dict) -> None:
         """
@@ -70,7 +76,18 @@ class EmailService:
         await fm.send_message(message)
 
 
-    async def send_user_reschedule_message(self, email_to: EmailStr, new_start_time: datetime, join_url: str):
+    async def send_user_reschedule_message(self, email_to: EmailStr, new_start_time: datetime, join_url: str) -> None:
+        """
+        Send an email notification to the user informing them that their Zoom meeting has been rescheduled.
+
+        Args:
+            email_to (EmailStr): The email address of the user.
+            new_start_time (datetime): The new start time of the rescheduled meeting.
+            join_url (str): The join URL for the rescheduled meeting.
+
+        Returns:
+            None
+        """
         local_datetime = new_start_time
         formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
         message = MessageSchema(
@@ -82,7 +99,29 @@ class EmailService:
         fm = FastMail(conf)
         await fm.send_message(message)
 
-    async def send_advisor_reschedule_message(self, email_to: EmailStr, new_start_time: datetime, join_url: str, user_first_name: str, user_last_name: str, topic: str):
+
+    async def send_advisor_reschedule_message(
+        self, 
+        email_to: EmailStr, 
+        new_start_time: datetime, 
+        join_url: str, 
+        user_first_name: str, 
+        user_last_name: str, 
+        topic: str):
+        """
+        Send an email notification to the advisor informing them that their Zoom meeting has been rescheduled.
+
+        Args:
+            email_to (EmailStr): The email address of the advisor.
+            new_start_time (datetime): The new start time of the rescheduled meeting.
+            join_url (str): The join URL for the rescheduled meeting.
+            user_first_name (str): The first name of the user who scheduled the meeting.
+            user_last_name (str): The last name of the user who scheduled the meeting.
+            topic (str): The topic of the meeting.
+
+        Returns:
+            None
+        """
         local_datetime = new_start_time
         formatted_time = local_datetime.strftime('%Y-%m-%d %H:%M %Z')
         message = MessageSchema(
