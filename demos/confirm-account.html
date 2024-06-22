@@ -4,32 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        p {
+            color: #333333;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <div>
+    <div class="container">
+        <h1>Account Confirmation</h1>
+        <p>Click the button below to confirm your account:</p>
         <button id="confirmar">Confirm your account</button>
     </div>
 
     <script>
         function getQueryParams(param) {
-            const urlParams = new URLSearchParams(window.location.search)
-            return urlParams.get(param)
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
         }
 
-        let confirmacion = document.getElementById('confirmar')
-        confirmacion.addEventListener('click', async () => {
-            const token = getQueryParams('token')
+        document.getElementById('confirmar').addEventListener('click', async () => {
+            const token = getQueryParams('token');
             const response = await fetch('http://localhost:8000/confirm-user-account', {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
-                    "Content-Type" : "application/json"
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({token : token})
-            })
+                body: JSON.stringify({ token })
+            });
 
-            if (response.ok) { alert("Your account has been successfully confirmed.")}
-            else {alert("There has been an error confirming your account.")}
-        })
+            if (response.ok) {
+                alert("Your account has been successfully confirmed.");
+            } else {
+                alert("There has been an error confirming your account.");
+            }
+        });
     </script>
 </body>
 </html>

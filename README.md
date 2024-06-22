@@ -133,8 +133,7 @@ POSTGRES_DB_PORT=5432                       # Don't change it
 SQLALCHEMY_DATABASE_URL=postgresql://postgres:your_postgres_password@db:5432/RESTAPI-DB
 ```
 
-Here you can leave everything as it is, except for the **POSTGRES_PASSWORD** just choose a password and replace it both in the 
-variable and in the URL
+You can keep everything as it is, except for the **POSTGRES_PASSWORD**. Choose a secure password and replace it both in the variable and in the URL.
 
 ```ini
 # Secret Keys
@@ -144,14 +143,13 @@ PASSWORD_RESET_SECRET_KEY=your_password_reset_secret_key
 GOOGLE_OAUTH_SECRET_KEY=your_google_oauth_secret_key
 ```
 
-Your secret keys could be any string, but it is better for the security of the API to generate a long and more secure string.
-You can generate it using this command in the terminal:
+Your secret keys can be any string, but for better security of the API, it is recommended to generate long, secure strings. You can generate them using the following command in the terminal:
 
 ```bash
 openssl rand -hex 32
 ```
-As a result, it'll generate a long string like this **`210b48bdfe0d703e820b93361e3178add9f18af8d0fadfecdd508446a780cc29`**.
-I suggest, generating a different string for each Secret Key and replace it up there.
+This will generate a long string like **`210b48bdfe0d703e820b93361e3178add9f18af8d0fadfecdd508446a780cc29`**.
+It is suggested to generate a different string for each secret key and replace the placeholder values accordingly.
 
 ```ini
 # Zoom API Configuration
@@ -160,8 +158,7 @@ ZOOM_CLIENT_SECRET=your_zoom_client_secret
 ZOOM_ACCOUNT_ID=your_zoom_account_id
 ```
 
-Here you will have to replace those default values for the ones you got from creating the Zoom Server-to-Server Application.
-Account ID, Client ID and Client Secret.
+Replace these default values with the ones you obtained when creating the Zoom Server-to-Server Application. Use the Account ID, Client ID, and Client Secret provided by Zoom.
 
 ```ini
 # Mail Configuration
@@ -170,8 +167,8 @@ MAIL_PASSWORD=your_mail_password
 MAIL_FROM=your_mail_from_address
 ```
 
-- In the **MAIL_USERNAME** and **MAIL_FROM** fill it with the gmail direction you used to create the password application to send the emails
-- In the **MAIL_PASSWORD** fill it with the password Google gave you when you created the password application. 
+- **MAIL_USERNAME** and **MAIL_FROM**: Use the Gmail address you set up to create the application password for sending emails.
+- **MAIL_PASSWORD** Use the password provided by Google when you created the application password.
 
 
 ```ini
@@ -257,3 +254,36 @@ docker-compose down -v
 ```
 
 This command stops the containers and removes the volumes, allowing you to start with a clean database when you run docker-compose up again.
+
+# Examples of Front-End Integration
+To demonstrate how to connect the front-end with the back-end for account confirmation and password reset, I have provided two example HTML files.
+## Account Confirmation Example
+### Overview
+This section demonstrates how to implement a simple account confirmation flow using a front-end HTML page and the back-end FastAPI endpoints. When a user registers, they receive a confirmation email with a link. By clicking the link, they confirm their account through an HTML page that interacts with the back-end API. You can see the HTML [here](/demos/confirm-account.html)
+
+### Back-End Endpoint
+[Here](/api/routers/auth.py) is the corresponding FastAPI endpoint for confirming the user account
+
+The workflow is:
+1. `Register a new user:` When a user registers, an email with a confirmation link is sent to them. The link includes a token parameter.
+2. `Click the confirmation link:` The user clicks the link in the email, which opens the [confirm-account.html](/demos/confirm-account.html) file in their browser.
+3. `Confirm the account:` The user clicks the "Confirm your account" button, which sends a request to the FastAPI endpoint to confirm their account.
+
+## Password Reset Example
+This HTML file demonstrates how to reset a user's password by filling in a form and sending the new password to the back-end.
+You can see the HTML provided [here](/demos/reset-password.html)
+
+### Back-End Endpoint
+[Here](/api/routers/password_reset.py) is the corresponding FastAPI endpoint for confirming the user account.
+
+The workflow is:
+
+1. **Request Password Reset:** The user requests to reset their password by entering their email address in a form on the front-end. This triggers an email with a password reset link to be sent to the user's email address. The link includes a token parameter.
+2. **Click the Reset Link:** The user clicks the link in the email, which opens the [reset-password.html](/demos/reset-password.html) file in their browser.
+3. **Enter New Password:** The user fills in the form with their new password and confirms it by re-entering the password.
+4. **Submit the Form:** The user submits the form, which sends a request to the FastAPI endpoint to reset the password. If the token is valid and the passwords match, the user's password is updated in the database.
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
