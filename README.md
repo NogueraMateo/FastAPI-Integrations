@@ -1,5 +1,5 @@
-# FULL-FEATURED-BACKEND-APPLICATION
-Welcome to the Full Featured Backend Application! This project leverages the power of FastAPI, SQLAlchemy, and PostgreSQL to create a robust and scalable backend. It features user authentication and authorization using JWT, integrates Google OAuth 2.0 for seamless login experiences, and connects with the Zoom API to schedule virtual meetings effortlessly.
+# FastAPI-Integrations
+Welcome to FastAPI-Integrations. This project leverages the power of FastAPI, SQLAlchemy, and PostgreSQL to create a robust and scalable backend. It features user authentication and authorization using JWT, integrates Google OAuth 2.0 for seamless login experiences, and connects with the Zoom API to schedule virtual meetings effortlessly.
 
 # Why this project?
 In today's fast-paced digital world, companies need to provide quick and efficient ways for users to access their services. This project addresses that need by enabling virtual consultations, reducing the need for physical meetings, and providing a seamless experience for both users and service providers.
@@ -54,7 +54,7 @@ Detailed instructions are provided to help you configure and run the application
 
 - Go to your terminal and make a git clone of this repository. 
 ```
-git clone https://github.com/NogueraMateo/FULL-FEATURED-BACKEND-APPLICATION.git
+git clone https://github.com/NogueraMateo/FastAPI-Integrations.git
 ```
 
 ## Setting up the Google Cloud Console project
