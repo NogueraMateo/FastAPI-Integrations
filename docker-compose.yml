@@ -12,15 +12,29 @@ services:
     depends_on:
       - db
       - redis
+      - test_db
+
 
   db:
     image: postgres:13
+    container_name: dev_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+
+
+  test_db:
+    image: postgres:13
+    container_name: test_db
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_TEST_DB}
 
   redis:
     image: redis:alpine
@@ -29,6 +43,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_test_data:
   redis_data:   
 
 networks:

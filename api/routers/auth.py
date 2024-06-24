@@ -217,8 +217,8 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     email_service = EmailService()
 
     exists_email = user_service.get_user_by_email(user_email= user.email)
-    exists_phone_number = user_service.get_user_by_phone_number(phone_number= user.phone_number)
-    exists_document = user_service.get_user_by_document(document=user.document)
+    exists_phone_number = user_service.get_user_by_phone_number(phone_number= user.phone_number) if user.phone_number is not None else None
+    exists_document = user_service.get_user_by_document(document=user.document) if user.document is not None else None
 
     if exists_email:
          raise HTTPException(status_code=400, detail="Email alredy registered")
@@ -244,8 +244,7 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     # Sending confirmation email
     await email_service.send_confirmation_account_message(user.email, token)
 
-    return {"message" : "User registered successfully, please check your email to confirm your account.",
-            "token" : token}
+    return {"message" : "User registered successfully, please check your email to confirm your account."}
 
 
 class ConfirmBase(BaseModel):
