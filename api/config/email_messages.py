@@ -57,7 +57,7 @@ confirmation_message = lambda token: f'''
                 <div class="content">
                     <p>Hola,</p>
                     <p>Please follow the following link to confirm your account:</p>
-                    <a href="http://127.0.0.1:5500/confirm-account.html?token={token}" class="button">Confirm Account</a>
+                    <a href="http://127.0.0.1:5500/demos/confirm-account.html?token={token}" class="button">Confirm Account</a>
                 </div>
                 <div class="footer">
                     <p>If you received this message by mistake, please ignore this email.</p>
@@ -126,7 +126,7 @@ reset_message = lambda token: f'''
             <div class="content">
                 <p>Hola,</p>
                 <p>Please follow the following link to reset your password:</p>
-                <a href="http://127.0.0.1:5500/recover.html?token={token}" class="button">Reset Password</a>
+                <a href="http://127.0.0.1:5500/demos/reset-password.html?token={token}" class="button">Reset Password</a>
             </div>
             <div class="footer">
                 <p>If you have not requested to reset your password, please ignore this email.</p>

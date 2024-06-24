@@ -1,12 +1,9 @@
 from fastapi_mail import FastMail, MessageSchema
-from sqlalchemy.orm import Session
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from ..utils.email_utils import conf
 from dateutil import parser
-from ..models import Advisor, User
-from pydantic import EmailStr, BaseModel
-from typing import Optional
-from ..services.token_service import EmailConfirmationTokenService, PasswordResetTokenService
+from ..models import User
+from pydantic import EmailStr
 from ..config.email_messages import confirmation_message, reset_message, user_invitation_message, advisor_invitation_message, user_reschedule_message, advisor_reschedule_message
 
 

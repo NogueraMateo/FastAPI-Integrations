@@ -30,7 +30,7 @@ async def lifespan(app:FastAPI):
             db.commit()
         
         if not advisor:
-            advisor = models.Advisor(name= ADVISOR_NAME, email=ADMIN_EMAIL)
+            advisor = models.Advisor(name= ADVISOR_NAME, email=ADVISOR_EMAIL)
             db.add(advisor)
             db.commit()
         yield

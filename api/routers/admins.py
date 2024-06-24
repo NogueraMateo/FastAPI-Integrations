@@ -1,4 +1,4 @@
-from fastapi import HTTPException, APIRouter, Depends
+from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.orm import Session
 from ..utils.auth_utils import get_current_admin_user

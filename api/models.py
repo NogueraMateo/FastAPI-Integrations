@@ -11,6 +11,7 @@ class UserRole(enum.Enum):
     REGULAR = "REGULAR"
     ADMIN = "ADMIN"
 
+
 class User(Base):
     """
     Represents a user in the application.

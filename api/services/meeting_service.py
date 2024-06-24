@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from ..config.exceptions import PatchMeetingError, DeleteMeetingError, CreateMeetingError
 from datetime import datetime
-from typing import Optional
 from .. import models, schemas
 import base64
 import json
