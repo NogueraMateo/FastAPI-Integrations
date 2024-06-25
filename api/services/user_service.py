@@ -96,6 +96,34 @@ class UserService:
             email= user.email,
             phone_number= user.phone_number,
             document= user.document,
+            password_hash= password_hash)
+        self.db.add(db_user)
+        self.db.commit()
+        self.db.refresh(db_user)
+        return db_user
+
+
+    def create_user_google(self, user: schemas.UserCreateGoogle) -> models.User:
+        """
+        Create a new user.
+
+        Args:
+            user (schemas.UserCreate): The user data for creating a new user.
+
+        Returns:
+            models.User: The newly created user.
+        """
+        data = user.model_dump(exclude_unset=True)
+        
+        password_hash = crypt.hash(user.plain_password) if "plain_password" in data else None
+
+        db_user = models.User(
+            first_name= user.first_name,
+            second_name= user.second_name,
+            lastname= user.lastname,
+            email= user.email,
+            phone_number= user.phone_number,
+            document= user.document,
             password_hash= password_hash,
             google_access_token= user.google_access_token)
         self.db.add(db_user)
@@ -103,6 +131,7 @@ class UserService:
         self.db.refresh(db_user)
         return db_user
 
+    
 
     def update_user(self, user_id: int, user_update: schemas.UserUpdate) -> models.User:
         """

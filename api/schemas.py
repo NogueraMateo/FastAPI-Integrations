@@ -16,8 +16,7 @@ class UserBase(BaseModel):
 # Creating an user
 class UserCreate(UserBase):
     document: Optional[str] = None
-    plain_password: Optional[str] = None
-    google_access_token: Optional[str] = None
+    plain_password: str
 
     @field_validator('first_name')
     def first_name_must_not_be_empty(cls, v):
@@ -30,19 +29,11 @@ class UserCreate(UserBase):
         if not v:  # Esto verificará tanto None como strings vacíos
             raise ValueError('Lastname field must be provided')
         return v
-    
-    @field_validator('phone_number')
-    def phone_number_must_not_be_empty(cls, v):
-        if not v:  # Esto verificará tanto None como strings vacíos
-            raise ValueError('Phone number field must be provided')
-        return v
 
-    @field_validator('document')
-    def document_must_not_be_empty(cls, v):
-        if not v:  # Esto verificará tanto None como strings vacíos
-            raise ValueError('Document field must be provided')
-        return v
-
+class UserCreateGoogle(UserBase):
+    document: Optional[str] = None
+    plain_password: Optional[str] = None
+    google_access_token: Optional[str] = None
 
 class UserCreateByAdmin(UserCreate):
     role: Optional[str]

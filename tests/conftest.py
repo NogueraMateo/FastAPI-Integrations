@@ -46,7 +46,7 @@ def client(db_session):
 
 
 @pytest.fixture()
-def created_users_to_fail_with_email(client):
+def register_users_to_fail(client):
     users_to_add = [
         {
             "first_name" : "John",
@@ -58,31 +58,19 @@ def created_users_to_fail_with_email(client):
             "first_name": "Jane",
             "lastname": "Smith",
             "email": "janesmith@email.com",
-            "plain_password": "janesmithpassword"
+            "plain_password": "janesmithpassword",
+            "phone_number" : "+573102345670"
+
         },
         {
             "first_name": "Robert",
             "lastname": "Johnson",
             "email": "robertjohnson@email.com",
+            "document" : "100482456",
             "plain_password": "robertjohnsonpassword"
         }
     ]
     for user in users_to_add:
         response = client.post("/register", json=user)
-
-    return client
-
-
-@pytest.fixture()
-def create_user_to_fail_with_phone_number(client):
-    user_to_add = {
-        "first_name" : "John",
-        "lastname":"Doe",
-        "email" : "johndoe@email.com",
-        "plain_password" : "johndoepassword",
-        "phone_number" : "+573102345670"
-    }
-
-    client.post("/register", json=user_to_add)
 
     return client

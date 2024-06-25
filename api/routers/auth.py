@@ -155,7 +155,7 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
         user_db = user_service.get_user_by_email(user_email)
 
         if not user_db:
-            user_created = user_service.create_user(schemas.UserCreate(
+            user_created = user_service.create_user_google(schemas.UserCreateGoogle(
                 first_name=user_first_name,
                 lastname=user_lastname,
                 email=user_email,
