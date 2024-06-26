@@ -22,7 +22,7 @@ async def lifespan(app:FastAPI):
                 first_name="Matheww", 
                 lastname="Drawer", 
                 email=ADMIN_EMAIL, 
-                password_hash =ADMIN_PASSWORD_HASH, # Password is admin123
+                password_hash ="$2b$12$tOOtHr32DkiCAlnZa9F6UOASUvHo0vZlmMyYlvLxlttuqt7TvLyri", # Password is admin123
                 is_active=True,
                 role='ADMIN'
             )

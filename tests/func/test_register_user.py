@@ -1,8 +1,3 @@
-from api.services.email_service import EmailService
-from api.services.user_service import UserService
-from api.schemas import UserCreate
-
-
 def test_register_user(client):
     """
     Given a database session, a new user is registered
@@ -21,7 +16,7 @@ def test_register_user(client):
     assert response.json() == expected_message
 
 
-def test_register_user_fail_1(register_users_to_fail):
+def test_register_user_fail_1(register_users_for_login):
     """
     Given a database session alredy with some users registered, the function tries to add a new user with
     an email alredy in use. 
@@ -33,7 +28,7 @@ def test_register_user_fail_1(register_users_to_fail):
         "plain_password": "juliusdopaspassword"
     }
 
-    client = register_users_to_fail
+    client = register_users_for_login
     expected_message = "Email alredy registered"
     response = client.post("/register", json= user_data)
     
@@ -41,7 +36,7 @@ def test_register_user_fail_1(register_users_to_fail):
     assert response.json()["detail"] == expected_message
 
 
-def test_register_user_fail_2(register_users_to_fail):
+def test_register_user_fail_2(register_users_for_login):
     """
     Given a database session which has been used to insert a user, the function tries to add another new
     user with a phone number alredy being used.
@@ -49,12 +44,12 @@ def test_register_user_fail_2(register_users_to_fail):
     user_data = {
         "first_name": "Jane",
         "lastname": "Smith",
-        "email": "example@email.com",
+        "email": "example2@email.com",
         "plain_password": "janesmithpassword",
         "phone_number" : "+573102345670"
     }
 
-    client = register_users_to_fail
+    client = register_users_for_login
     expected_message = "Phone number alredy registered"
     response = client.post("/register", json= user_data)
 
@@ -62,7 +57,7 @@ def test_register_user_fail_2(register_users_to_fail):
     assert response.json()["detail"] == expected_message
 
 
-def test_register_user_fail_3(register_users_to_fail):
+def test_register_user_fail_3(register_users_for_login):
     """
     Given a database session which has been used to insert a user, the function tries to add another new
     user with a document alredy being used.
@@ -70,12 +65,12 @@ def test_register_user_fail_3(register_users_to_fail):
     user_data = {
         "first_name": "Jane",
         "lastname": "Smith",
-        "email": "example@email.com",
+        "email": "example2@email.com",
         "plain_password": "janesmithpassword",
         "document" : "100482456"   
     }
 
-    client = register_users_to_fail
+    client = register_users_for_login
     expected_message = "Document alredy registered"
     response = client.post("/register", json= user_data)
 
@@ -90,7 +85,7 @@ def test_register_user_fail_4(client):
     user_data = {
         "first_name": "Jane",
         "lastname": "Smith",
-        "email": "example@email.com",
+        "email": "example2@email.com",
         "plain_password": "janes"
     }
 
@@ -197,3 +192,23 @@ def test_register_user_fail_10(client):
     expected_message = "value is not a valid email address: The part after the @-sign is not valid. It should have a period."
     assert response.status_code == 422
     assert response.json()["detail"][0]["msg"] == expected_message    
+
+
+def test_register_user_fail_11(client):
+    """
+    Given a database session, the function tries to register a user with an unexpected field in the data
+    """
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": "Doe",
+        "email": "email@example.com",
+        "plain_password": "anypassordisok",
+        "incorrect_field": "not_supposed_to_pass"
+    }
+    
+    expected_message = "Extra inputs are not permitted"
+    response = client.post("/register", json= user_data)
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == expected_message
+

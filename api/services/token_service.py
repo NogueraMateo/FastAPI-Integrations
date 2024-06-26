@@ -26,7 +26,7 @@ class TokenServiceBase:
         pass
 
 
-    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None):
+    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None, secret_key: str = None):
         pass
 
 
@@ -94,7 +94,7 @@ class PasswordResetTokenService(TokenServiceBase):
         return password_reset_token
 
 
-    async def create_token(self, data: dict, expires_delta: Optional[timedelta]= None) -> (str, datetime):
+    async def create_token(self, data: dict, expires_delta: Optional[timedelta]= None, secret_key: str = None) -> (str, datetime):
         """
         Generate a token for password reset.
 
@@ -227,7 +227,7 @@ class EmailConfirmationTokenService(TokenServiceBase):
         return confirm_account_token
 
     
-    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> (str, datetime):
+    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None, secret_key: str = None) -> (str, datetime):
         """
         Generate an email confirmation token.
 
@@ -247,7 +247,7 @@ class EmailConfirmationTokenService(TokenServiceBase):
         to_encode.update({'exp' : expire})
 
         try:
-            encoded_jwt = jwt.encode(to_encode, EMAIL_CONFIRMATION_SECRET_KEY, algorithm=ALGORITHM)
+            encoded_jwt = jwt.encode(to_encode, EMAIL_CONFIRMATION_SECRET_KEY if secret_key is None else secret_key, algorithm=ALGORITHM)
             return (encoded_jwt, expire)
         except Exception as e:
             raise Exception(f"Error encoding JWT: {str(e)}")

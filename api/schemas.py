@@ -12,6 +12,7 @@ class UserBase(BaseModel):
 
     class Config:
         from_attributes = True
+        extra = "forbid"
 
 # Creating an user
 class UserCreate(UserBase):
@@ -52,6 +53,7 @@ class UserUpdate(BaseModel):
 
     class Config:
         from_attributes= True
+        extra = "forbid"
 
 
 # --------------------------- PASSWORD RESET TOKENS SCHEMAS ---------------------------
@@ -62,6 +64,8 @@ class PasswordResetTokenBase(BaseModel):
 
     class Config:
         from_attributes = True
+        extra = "forbid"
+
 
 class PasswordResetTokenCreate(PasswordResetTokenBase):
     is_used: bool
@@ -70,13 +74,14 @@ class PasswordResetTokenCreate(PasswordResetTokenBase):
 class PasswordResetTokenUpdate(BaseModel):
     is_used: bool
 
+    class Config:
+        from_attributes = True
+        extra = "forbid"
+
 class PasswordResetToken(PasswordResetTokenBase):
     id: int
     is_used: bool
     user: 'UserBase'
-
-    class Config:
-        from_attributes = True
 
 # --------------------------- EMAIL TOKENS SCHEMAS ---------------------------
 class EmailConfirmationTokenBase(BaseModel):
@@ -85,6 +90,8 @@ class EmailConfirmationTokenBase(BaseModel):
 
     class Config:
         from_attributes = True
+        extra = "forbid"
+
 
 class EmailConfirmationTokenCreate(EmailConfirmationTokenBase):
     is_used: bool
@@ -93,22 +100,34 @@ class EmailConfirmationTokenCreate(EmailConfirmationTokenBase):
 class EmailConfirmationTokenUpdate(BaseModel):
     is_used: bool
 
+    class Config:
+        from_attributes = True
+        extra = "forbid"
+
+
 class EmailConfirmationToken(EmailConfirmationTokenBase):
     id: int
     is_used: bool
     user: 'UserBase'
 
-    class Config:
-        from_attributes = True
 
 class TokenData(BaseModel):
     email: EmailStr
+
+    class Config:
+        extra = "forbid"
+
 
 
 # Base model for advisors
 class AdvisorBase(BaseModel):
     name: str
     email: EmailStr
+
+    class Config:
+        from_attributes = True
+        extra = "forbid"
+
 
 class AdvisorCreate(AdvisorBase):
     pass
@@ -120,7 +139,7 @@ class Advisor(AdvisorBase):
     class Config:
         from_attributes = True
 
-# Base model for meetings
+
 class MeetingBase(BaseModel):
     start_time: datetime
     zoom_meeting_id: Optional[str] = None
@@ -128,22 +147,29 @@ class MeetingBase(BaseModel):
     
     class Config:
         from_attributes = True
+        extra = "forbid"
+
 
 class MeetingCreate(BaseModel):
     start_time: datetime
     topic: str
 
+    class Config:
+        from_attributes = True
+        extra = "forbid"
+
 class MeetingUpdate(BaseModel):
     start_time: datetime
+
+    class Config:
+        from_attributes = True
+        extra = "forbid"
 
 class Meeting(MeetingBase):
     id: int
     user_id:int
     advisor_id: int
     topic: str
-
-    class Config:
-        from_attributes = True
 
     
 # Reading an user
@@ -164,6 +190,10 @@ class ResetPasswordFields(BaseModel):
     token: str
     new_password:str
     new_password_confirm:str
+
+    class Config:
+        from_attributes = True
+        extra = "forbid"
 
 
 User.model_rebuild()

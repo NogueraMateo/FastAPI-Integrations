@@ -7,7 +7,7 @@ from ..services.user_service import UserService
 from ..services.token_service import EmailConfirmationTokenService
 from ..services.email_service import EmailService
 
-from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES
+from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES, RATE_LIMIT_PERIOD
 
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, HTTPException
@@ -44,7 +44,7 @@ oauth.register(
 router = APIRouter(tags=["Login and Registration"])
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses= True)
 
-@router.post("/login", status_code= 201)
+@router.post("/login")
 async def login(
     response: Response,
     request: Request,
@@ -73,7 +73,7 @@ async def login(
     client_ip = request.client.host
     identifier = f"{client_ip}:{username}"
 
-    if rate_limit_exceeded(redis_client= redis_client, identifier= identifier, max_requests= 5, period= 300):
+    if rate_limit_exceeded(redis_client= redis_client, identifier= identifier, max_requests= 5, period= RATE_LIMIT_PERIOD):
         raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
     
     user = await authenticate_user(db, form_data.username, form_data.password)
