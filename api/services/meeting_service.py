@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from ..config.exceptions import PatchMeetingError, DeleteMeetingError, CreateMeetingError
+from ..config.exceptions import PatchMeetingError, DeleteMeetingError, CreateMeetingError, GetMeetingError
 from datetime import datetime
 from .. import models, schemas
 import base64
@@ -68,6 +68,22 @@ class MeetingService:
         }
         response = requests.post(url, headers=auth_header, data=payload)
         return response.json().get('access_token')
+
+    
+    def get_meeting(self, meeting_id: str):
+        access_token = self.get_meeting_access_token()
+        url = f"https://api.zoom.us/v2/meetings/{meeting_id}"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()  
+        
+        raise GetMeetingError
 
 
     def create_meeting(self, start_time: datetime, topic: str, user_id: int, advisor_id: int) -> (models.Meeting, dict):

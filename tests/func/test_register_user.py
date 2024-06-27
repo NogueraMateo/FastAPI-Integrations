@@ -168,13 +168,11 @@ def test_register_user_fail_9(client):
         "lastname": "Doe",
         "email": "exampleemail.com",
         "plain_password": "mathewwisnotdoe"
-    }
-
-    expected_message = "value is not a valid email address: The email address is not valid. It must have exactly one @-sign."
+    } 
     response = client.post("/register", json=user_data)
 
     assert response.status_code == 422
-    assert response.json()["detail"][0]["msg"] == expected_message
+    assert response.json()["detail"][0]["msg"] == "value is not a valid email address: The email address is not valid. It must have exactly one @-sign."
 
 
 def test_register_user_fail_10(client):
@@ -189,9 +187,8 @@ def test_register_user_fail_10(client):
     }
 
     response = client.post("/register", json= user_data)
-    expected_message = "value is not a valid email address: The part after the @-sign is not valid. It should have a period."
     assert response.status_code == 422
-    assert response.json()["detail"][0]["msg"] == expected_message    
+    assert response.json()["detail"][0]["msg"] == "value is not a valid email address: The part after the @-sign is not valid. It should have a period."
 
 
 def test_register_user_fail_11(client):
@@ -205,10 +202,35 @@ def test_register_user_fail_11(client):
         "plain_password": "anypassordisok",
         "incorrect_field": "not_supposed_to_pass"
     }
-    
-    expected_message = "Extra inputs are not permitted"
     response = client.post("/register", json= user_data)
 
     assert response.status_code == 422
-    assert response.json()["detail"][0]["msg"] == expected_message
+    assert response.json()["detail"][0]["msg"] == "Extra inputs are not permitted"
 
+
+def test_register_user_fail_12(client):
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": "Doe",
+        "email": "email@example.com",
+        "plain_password": "anypassordisok",
+        "phone_number" : "3184526541"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "value is not a valid phone number"
+
+
+def test_register_user_fail_13(client):
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": "Doe",
+        "email": "email@example.com",
+        "plain_password": "anypassordisok",
+        "phone_number" : "318243"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "String should have at least 7 characters"

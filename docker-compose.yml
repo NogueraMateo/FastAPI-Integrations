@@ -1,20 +1,4 @@
 services:
-  web:
-    container_name: fastapi-full
-    build: .
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/code
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - redis
-      - test_db
-
-
   db:
     image: postgres:13
     container_name: dev_db
@@ -40,6 +24,21 @@ services:
     image: redis:alpine
     volumes:
       - redis_data:/data
+
+  web:
+    container_name: fastapi-full
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - test_db
 
 volumes:
   postgres_data:

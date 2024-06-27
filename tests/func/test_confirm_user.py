@@ -2,7 +2,7 @@ from api.models import User, EmailConfirmationToken
 import time
 import pytest
 
-def test_confirm_user_account(client, db_session):
+def test_confirm_user_account_1(client, db_session):
     """
     Test that a user account can be successfully confirmed with a valid token.
 
@@ -87,7 +87,7 @@ def test_confirm_user_account_2(register_users_for_login, db_session):
 
 
 @pytest.mark.asyncio
-async def test_confirm_user_account_fail_2(invalid_token_for_confirmation, client):
+async def test_confirm_user_account_fail_1(invalid_token_for_confirmation, client):
     """
     Test that confirming an account with an invalid token results in an error.
 
@@ -108,7 +108,7 @@ async def test_confirm_user_account_fail_2(invalid_token_for_confirmation, clien
     assert response.json()["detail"] == "Could not validate credentials"
 
 
-def test_confirm_user_account_fail_3(register_users_for_login, db_session):
+def test_confirm_user_account_fail_2(register_users_for_login, db_session):
     """
     Test that confirming an account with an expired token results in an error.
 
@@ -145,3 +145,9 @@ def test_confirm_user_account_fail_3(register_users_for_login, db_session):
     assert not updated_user.is_active
 
 
+def test_confirm_user_account_fail_3(client):
+    invalid_token_data = {"token" : "invalidtoken", "extra_field" : "extra_field_not_permitted"}
+    response = client.patch("/confirm-user-account", json=invalid_token_data)
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "Extra inputs are not permitted"

@@ -1,18 +1,18 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
+from pydantic_extra_types.phone_numbers import PhoneNumber
 from typing import Optional, List
 from datetime import datetime
 
+class CustomBaseModel(BaseModel):
+    model_config = ConfigDict(from_attributes = True, extra = 'forbid')
+
 # --------------------------- USER SCHEMAS ---------------------------
-class UserBase(BaseModel):
+class UserBase(CustomBaseModel):
     first_name: str
     second_name: Optional[str] = None
     lastname: str
     email: EmailStr
-    phone_number: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
+    phone_number: Optional[PhoneNumber] = None
 
 # Creating an user
 class UserCreate(UserBase):
@@ -41,42 +41,30 @@ class UserCreateByAdmin(UserCreate):
 
     
 # Schema expected when updating an user
-class UserUpdate(BaseModel):
+class UserUpdate(CustomBaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
     plain_password: Optional[str] = None
-    phone_number: Optional[str] = None
+    phone_number: Optional[PhoneNumber] = None
     last_meeting_scheduled: Optional[datetime]= None
     is_active: Optional[bool] = None    
     role: Optional[str] = None
     google_access_token: Optional[str] = None
 
-    class Config:
-        from_attributes= True
-        extra = "forbid"
-
 
 # --------------------------- PASSWORD RESET TOKENS SCHEMAS ---------------------------
 
-class PasswordResetTokenBase(BaseModel):
+class PasswordResetTokenBase(CustomBaseModel):
     token: str
     expiry: datetime
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
 
 class PasswordResetTokenCreate(PasswordResetTokenBase):
     is_used: bool
     user_id: int
 
-class PasswordResetTokenUpdate(BaseModel):
+class PasswordResetTokenUpdate(CustomBaseModel):
     is_used: bool
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
 class PasswordResetToken(PasswordResetTokenBase):
     id: int
@@ -84,26 +72,18 @@ class PasswordResetToken(PasswordResetTokenBase):
     user: 'UserBase'
 
 # --------------------------- EMAIL TOKENS SCHEMAS ---------------------------
-class EmailConfirmationTokenBase(BaseModel):
+class EmailConfirmationTokenBase(CustomBaseModel):
     token: str
     expiry: datetime
 
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
 
 class EmailConfirmationTokenCreate(EmailConfirmationTokenBase):
     is_used: bool
     user_id: int
 
-class EmailConfirmationTokenUpdate(BaseModel):
+class EmailConfirmationTokenUpdate(CustomBaseModel):
     is_used: bool
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
-
 
 class EmailConfirmationToken(EmailConfirmationTokenBase):
     id: int
@@ -111,23 +91,14 @@ class EmailConfirmationToken(EmailConfirmationTokenBase):
     user: 'UserBase'
 
 
-class TokenData(BaseModel):
+class TokenData(CustomBaseModel):
     email: EmailStr
-
-    class Config:
-        extra = "forbid"
-
 
 
 # Base model for advisors
-class AdvisorBase(BaseModel):
+class AdvisorBase(CustomBaseModel):
     name: str
     email: EmailStr
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
-
 
 class AdvisorCreate(AdvisorBase):
     pass
@@ -136,34 +107,18 @@ class Advisor(AdvisorBase):
     id: int
     meetings: List['Meeting'] = []  # List of associated meetings
 
-    class Config:
-        from_attributes = True
 
-
-class MeetingBase(BaseModel):
+class MeetingBase(CustomBaseModel):
     start_time: datetime
     zoom_meeting_id: Optional[str] = None
     join_url: Optional[str] = None
-    
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
-
-class MeetingCreate(BaseModel):
+class MeetingCreate(CustomBaseModel):
     start_time: datetime
     topic: str
 
-    class Config:
-        from_attributes = True
-        extra = "forbid"
-
-class MeetingUpdate(BaseModel):
+class MeetingUpdate(CustomBaseModel):
     start_time: datetime
-
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
 class Meeting(MeetingBase):
     id: int
@@ -183,18 +138,17 @@ class User(UserBase):
     email_confirmation_tokens: List[EmailConfirmationToken] = []
 
 
-class TokenData(BaseModel):
+class TokenData(CustomBaseModel):
     email: EmailStr | None = None
 
-class ResetPasswordFields(BaseModel):
+class ResetPasswordFields(CustomBaseModel):
     token: str
     new_password:str
     new_password_confirm:str
 
-    class Config:
-        from_attributes = True
-        extra = "forbid"
 
+class ConfirmBase(CustomBaseModel):
+    token: str
 
 User.model_rebuild()
 PasswordResetToken.model_rebuild()

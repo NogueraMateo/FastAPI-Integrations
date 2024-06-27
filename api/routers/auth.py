@@ -100,12 +100,6 @@ async def login(
         max_age= ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
 
-    return {
-        "access_token": access_token,
-        "token-type": "Bearer",
-        "email" : user.email
-    }
-
 
 @router.get("/login/google")
 async def login_google(request: Request):
@@ -247,11 +241,8 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
     return {"message" : "User registered successfully, please check your email to confirm your account."}
 
 
-class ConfirmBase(BaseModel):
-    token: str
-
 @router.patch("/confirm-user-account")
-async def confirm_user_account(info: ConfirmBase, db: Session = Depends(get_db)):
+async def confirm_user_account(info: schemas.ConfirmBase, db: Session = Depends(get_db)):
     """
     Confirm the user's account using the provided token.
 
