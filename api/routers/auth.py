@@ -100,7 +100,6 @@ async def login(
         max_age= ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
 
-
 @router.get("/login/google")
 async def login_google(request: Request):
     """

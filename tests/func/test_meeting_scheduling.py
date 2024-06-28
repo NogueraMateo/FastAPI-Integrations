@@ -22,7 +22,7 @@ def test_meeting_scheduling_fail(register_users_for_login, create_valid_access_t
 
     access_token = create_valid_access_token_1
     client = register_users_for_login
-
+    client.cookies.set("access_token", access_token)
     # This is the actual date and time the meeting is going to be scheduled
     tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
     
@@ -35,7 +35,7 @@ def test_meeting_scheduling_fail(register_users_for_login, create_valid_access_t
     }
 
     # Send headers to authenticate
-    response = client.post("/schedule-meeting/", json=meeting_data, headers= {"Authorization" : f"Bearer {access_token}"})
+    response = client.post("/schedule-meeting/", json=meeting_data)
     assert response.status_code == 404
     assert response.json()["detail"] == "No advisors available"
 
@@ -59,7 +59,7 @@ def test_successful_meeting_scheduling(register_users_for_login, insert_advisors
     """
     access_token = create_valid_access_token_1
     client = register_users_for_login
-
+    client.cookies.set("access_token", access_token)
     # This is the actual date and time the meeting is going to be scheduled
     tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
     
@@ -72,7 +72,7 @@ def test_successful_meeting_scheduling(register_users_for_login, insert_advisors
     }
 
     # Send headers to authenticate
-    response = client.post("/schedule-meeting/", json=meeting_data, headers= {"Authorization" : f"Bearer {access_token}"})
+    response = client.post("/schedule-meeting/", json=meeting_data)
     assert response.status_code == 200
 
     response_data = response.json()
@@ -118,11 +118,11 @@ def test_meeting_scheduling_fail_1(client, db_session):
         "start_time": start_time,
         "topic" : "Testing meeting scheduling"
     }
-
+    client.cookies.delete("access_token")
     # Send the request without headers (user not authenticated)
     response = client.post("/schedule-meeting/", json=meeting_data)
     assert response.status_code == 401
-    assert response.json()["detail"] == "Not authenticated"
+    assert response.json()["detail"] == "Could not validate credentials"
 
 
 def test_meeting_scheduling_fail_2(create_access_token_with_wrong_signature, client):
@@ -144,7 +144,8 @@ def test_meeting_scheduling_fail_2(create_access_token_with_wrong_signature, cli
     }
 
     access_token = create_access_token_with_wrong_signature
-    response = client.post("/schedule-meeting/", json=meeting_data, headers= {"Authorization" : f"Bearer {access_token}"})
+    client.cookies.set("access_token", access_token)
+    response = client.post("/schedule-meeting/", json=meeting_data)
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Could not validate credentials"
@@ -170,12 +171,28 @@ def test_meeting_scheduling_fail_3(register_users_for_login, create_access_token
 
     access_token = create_access_token_expired
     client = register_users_for_login
-
+    client.cookies.delete("access_token")
+    client.cookies.set("access_token", access_token)
     # Wait for the token to expire
     time.sleep(5)
-    response = client.post("/schedule-meeting/", json=meeting_data, headers= {"Authorization" : f"Bearer {access_token}"})
+    response = client.post("/schedule-meeting/", json=meeting_data)
+    print(response.json())
     assert response.status_code == 401
     assert response.json()["detail"] == "Token has expired"
+
+
+def test_meeting_scheduling_5(create_valid_access_token_2, register_users_for_login):
+    access_token = create_valid_access_token_2
+    client = register_users_for_login
+    client.cookies.set("access_token", access_token)
+
+    meeting_data = {
+        "start_time": "2024/06/09T23:00", # Invalid datetime
+        "topic" : "Testing meeting scheduling"
+    }
+
+    response = client.post("/schedule-meeting/", json=meeting_data)
+
 
 
 def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_for_login):
@@ -191,6 +208,7 @@ def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_f
     """
     access_token = create_valid_access_token_2
     client = register_users_for_login
+    client.cookies.set("access_token", access_token)
 
     for i in range(2):
         tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
@@ -200,7 +218,7 @@ def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_f
             "topic" : "Testing meeting scheduling"
         }
 
-        response = client.post("/schedule-meeting/", json=meeting_data, headers= {"Authorization" : f"Bearer {access_token}"})
+        response = client.post("/schedule-meeting/", json=meeting_data)
         if i == 0:
             assert response.status_code == 200
 
@@ -216,3 +234,5 @@ def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_f
         else:
             assert response.status_code == 400
             assert response.json()["detail"] == "It has not been 7 days since you last scheduled a meeting"
+
+

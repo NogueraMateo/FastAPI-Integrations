@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from jose import JWTError, jwt, ExpiredSignatureError
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from ..database import get_db
@@ -59,7 +59,7 @@ async def create_access_token(data: dict, expires_delta: Optional[timedelta]= No
         raise Exception(f"Error encoding JWT: {str(e)}")
     
 
-def get_current_user(token: str = Depends(oauth2), db: Session= Depends(get_db)) -> models.User:
+def get_current_user(request: Request, db: Session= Depends(get_db)) -> models.User:
     """
     Retrieve the current authenticated user from the database using the provided JWT token.
 
@@ -73,6 +73,9 @@ def get_current_user(token: str = Depends(oauth2), db: Session= Depends(get_db))
     Raises:
         HTTPException: If the token is expired or invalid, or if the user is not found.
     """
+    token = request.cookies.get("access_token")
+    if not token:
+        raise credentials_exception
     try:
         payload= jwt.decode(token, ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")

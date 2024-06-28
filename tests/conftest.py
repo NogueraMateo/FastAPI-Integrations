@@ -1,10 +1,9 @@
 from dotenv import load_dotenv
 import os
-
 load_dotenv()
 
 os.environ["RATE_LIMIT_PERIOD"] = "1"
-os.environ["CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES"] = "0.2"
+os.environ["CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES"] = "0.1"
 
 
 import pytest 
@@ -18,8 +17,9 @@ from jose import JWTError, jwt, ExpiredSignatureError
 from api.main import app
 from api.database import Base, get_db
 from api.services.token_service import EmailConfirmationTokenService
-from api.models import Advisor
+from api.models import Advisor, User
 from api.config.constants import ACCESS_TOKEN_SECRET_KEY, ALGORITHM
+from api.models import crypt
 
 
 SQLALCHEMY_TEST_DATABASE_URL=os.getenv("SQLALCHEMY_TEST_DATABASE_URL")
@@ -211,6 +211,94 @@ def create_valid_access_token_2():
         raise Exception(f"Error encoding JWT: {str(e)}")
 
 
+@pytest.fixture(scope="module")
+def create_admin_access_token(db_session):
+    db: TestingSessionLocal = db_session
+    admin_password = crypt.hash("admin123")
+    admin_user = User(
+        first_name= "Admin",
+        lastname="API", 
+        email= "adminuser@email.com", 
+        password_hash= admin_password,
+        is_active = True,
+        role= "ADMIN")
+    
+    db.add(admin_user)
+    db.commit()
+
+    data = {"sub" : "adminuser@email.com"}
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
+    to_encode.update({'exp' : expire})
+
+    try:
+        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+    except Exception as e:
+        raise Exception(f"Error encoding JWT: {str(e)}")
 
 
+@pytest.fixture(scope="module")
+def create_meeting_to_edit(register_users_for_login, create_valid_access_token_2, insert_advisors_for_meeting_scheduling):
+    client = register_users_for_login
+    access_token = create_valid_access_token_2
+
+    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
+    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
+    meeting_data = {
+        "start_time": start_time,
+        "topic" : "Testing meeting scheduling"
+    }
+    client.cookies.set("access_token", access_token)
+
+    # Send headers to authenticate
+    response = client.post("/schedule-meeting/", json=meeting_data)
+
+    return (response.json()["zoom_meeting_id"], client)
+
+
+@pytest.fixture(scope="module")
+def inactive_admin_access_token(db_session):
+    db: TestingSessionLocal = db_session
+    admin_password = crypt.hash("admin123")
+    admin_user = User(
+        first_name= "Admin",
+        lastname="API", 
+        email= "adminuser2@email.com", 
+        password_hash= admin_password,
+        is_active = False,
+        role= "ADMIN")
+    
+    db.add(admin_user)
+    db.commit()
+
+    data = {"sub" : "adminuser2@email.com"}
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
+    to_encode.update({'exp' : expire})
+
+    try:
+        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+    except Exception as e:
+        raise Exception(f"Error encoding JWT: {str(e)}")
+
+
+@pytest.fixture(scope="module")
+def create_valid_access_token_3(db_session):
+    db: TestingSessionLocal = db_session
+    user: User= db.query(User).filter(User.email == "janesmith@email.com").first()
+    user.is_active = True
+    db.commit()
+
+    data = {"sub" : "janesmith@email.com"}
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
+    to_encode.update({'exp' : expire})
+
+    try:
+        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+    except Exception as e:
+        raise Exception(f"Error encoding JWT: {str(e)}")
 # docker-compose exec web pytest tests/func/test_confirm_user.py

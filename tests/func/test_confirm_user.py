@@ -134,7 +134,7 @@ def test_confirm_user_account_fail_2(register_users_for_login, db_session):
     token = token_entry.token
 
     confirm_data = {"token" : token}
-    time.sleep(12)
+    time.sleep(7)
 
     response = client.patch("/confirm-user-account", json=confirm_data)
     
@@ -151,3 +151,12 @@ def test_confirm_user_account_fail_3(client):
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["msg"] == "Extra inputs are not permitted"
+
+
+def test_confirm_user_account_fail_4(client):
+    invalid_token_data = {"token" : ""}
+    response = client.patch("/confirm-user-account")
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "Field required"
+

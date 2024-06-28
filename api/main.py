@@ -6,10 +6,12 @@ from . import models
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import password_reset, meetings, auth, admins
 from starlette.middleware.sessions import SessionMiddleware
-from .config.constants import GOOGLE_OAUTH_SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD_HASH, ADVISOR_EMAIL, ADVISOR_NAME
+from .config.constants import GOOGLE_OAUTH_SECRET_KEY, ADMIN_EMAIL, ADVISOR_EMAIL, ADVISOR_NAME, ADMIN_PASSWORD
 from contextlib import asynccontextmanager
 
 models.Base.metadata.create_all(bind=engine)
+
+admin_password = models.crypt.hash(ADMIN_PASSWORD)
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -22,7 +24,7 @@ async def lifespan(app:FastAPI):
                 first_name="Matheww", 
                 lastname="Drawer", 
                 email=ADMIN_EMAIL, 
-                password_hash ="$2b$12$tOOtHr32DkiCAlnZa9F6UOASUvHo0vZlmMyYlvLxlttuqt7TvLyri", # Password is admin123
+                password_hash = admin_password, # Password is admin123
                 is_active=True,
                 role='ADMIN'
             )
