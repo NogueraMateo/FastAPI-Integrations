@@ -18,8 +18,9 @@ from api.main import app
 from api.database import Base, get_db
 from api.services.token_service import EmailConfirmationTokenService
 from api.models import Advisor, User
-from api.config.constants import ACCESS_TOKEN_SECRET_KEY, ALGORITHM
+from api.config.constants import ACCESS_TOKEN_SECRET_KEY, ALGORITHM, EMAIL_CONFIRMATION_SECRET_KEY
 from api.models import crypt
+from .func.test_meeting_scheduling import get_datetimes
 
 
 SQLALCHEMY_TEST_DATABASE_URL=os.getenv("SQLALCHEMY_TEST_DATABASE_URL")
@@ -122,7 +123,7 @@ def register_users_for_login(client):
 
 
 @pytest.fixture(scope="module")
-async def invalid_token_for_confirmation(db_session):
+async def invalid_token_for_confirmation():
     """
     Fixture to generate an invalid token for email confirmation.
 
@@ -135,10 +136,8 @@ async def invalid_token_for_confirmation(db_session):
     Yields:
         str: The invalid token string.
     """
-    service = EmailConfirmationTokenService(db_session)
     token_data = {"sub" : "robertjohnson@email.com", "aud" : "email-confirmation"}
-    token, ex = await service.create_token(token_data, secret_key= "invalid_string_tosign_token")
-    return token
+    yield generate_jwt(token_data, EMAIL_CONFIRMATION_SECRET_KEY, ALGORITHM)
 
 
 @pytest.fixture(scope="module")
@@ -173,11 +172,23 @@ def create_access_token_with_wrong_signature():
 def create_access_token_expired():
     data = {"sub" : "robertjohnson@email.com"}
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=0.075)
+    expire = datetime.now(timezone.utc) + timedelta(seconds=2)
     to_encode.update({'exp' : expire})
 
     try:
         encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+    except Exception as e:
+        raise Exception(f"Error encoding JWT: {str(e)}")
+
+
+def generate_jwt(data: dict, secret_key: str, algorithm: str, expires_delta: timedelta):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + expires_delta
+    to_encode.update({'exp': expire})
+
+    try:
+        encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
         return encoded_jwt
     except Exception as e:
         raise Exception(f"Error encoding JWT: {str(e)}")
@@ -186,29 +197,13 @@ def create_access_token_expired():
 @pytest.fixture(scope="module")
 def create_valid_access_token_1():
     data = {"sub" : "robertjohnson@email.com"}
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
-    to_encode.update({'exp' : expire})
-
-    try:
-        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
-    except Exception as e:
-        raise Exception(f"Error encoding JWT: {str(e)}")
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 
 
 @pytest.fixture(scope="module")
 def create_valid_access_token_2():
     data = {"sub" : "janesmith@email.com"}
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
-    to_encode.update({'exp' : expire})
-
-    try:
-        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
-    except Exception as e:
-        raise Exception(f"Error encoding JWT: {str(e)}")
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 
 
 @pytest.fixture(scope="module")
@@ -227,28 +222,15 @@ def create_admin_access_token(db_session):
     db.commit()
 
     data = {"sub" : "adminuser@email.com"}
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
-    to_encode.update({'exp' : expire})
-
-    try:
-        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
-    except Exception as e:
-        raise Exception(f"Error encoding JWT: {str(e)}")
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 
 
 @pytest.fixture(scope="module")
 def create_meeting_to_edit(register_users_for_login, create_valid_access_token_2, insert_advisors_for_meeting_scheduling):
     client = register_users_for_login
     access_token = create_valid_access_token_2
+    tomorrow_time, start_time, meeting_data = get_datetimes()
 
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
     client.cookies.set("access_token", access_token)
 
     # Send headers to authenticate
@@ -273,15 +255,7 @@ def inactive_admin_access_token(db_session):
     db.commit()
 
     data = {"sub" : "adminuser2@email.com"}
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
-    to_encode.update({'exp' : expire})
-
-    try:
-        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
-    except Exception as e:
-        raise Exception(f"Error encoding JWT: {str(e)}")
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 
 
 @pytest.fixture(scope="module")
@@ -292,13 +266,5 @@ def create_valid_access_token_3(db_session):
     db.commit()
 
     data = {"sub" : "janesmith@email.com"}
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=3)
-    to_encode.update({'exp' : expire})
-
-    try:
-        encoded_jwt = jwt.encode(to_encode, ACCESS_TOKEN_SECRET_KEY, algorithm=ALGORITHM)
-        return encoded_jwt
-    except Exception as e:
-        raise Exception(f"Error encoding JWT: {str(e)}")
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 # docker-compose exec web pytest tests/func/test_confirm_user.py

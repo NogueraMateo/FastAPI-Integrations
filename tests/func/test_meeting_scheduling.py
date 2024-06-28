@@ -3,8 +3,18 @@ from api.schemas import Meeting
 from api.services.meeting_service import MeetingService
 import time
 
+def get_datetimes():
+    # This is the actual date and time the meeting is going to be scheduled
+    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
+    # Since Zoom adds 5 hours to the actual date and time we want to schedule the meeting with, 
+    # we substract 5 hours to the actual date and time and pass it within the data.
+    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
+    meeting_data = {"start_time": start_time,"topic" : "Testing meeting scheduling"}
 
-def test_meeting_scheduling_fail(register_users_for_login, create_valid_access_token_1, db_session):
+    return (tomorrow_time, start_time, meeting_data)
+
+
+def test_meeting_scheduling_fail(register_users_for_login, create_valid_access_token_1):
     """
     Test scheduling a meeting without available advisors.
 
@@ -19,23 +29,13 @@ def test_meeting_scheduling_fail(register_users_for_login, create_valid_access_t
         create_valid_access_token_1 (fixture): Fixture to create a valid access token.
         db_session (fixture): Database session fixture.
     """
-
     access_token = create_valid_access_token_1
     client = register_users_for_login
-    client.cookies.set("access_token", access_token)
-    # This is the actual date and time the meeting is going to be scheduled
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-    
-    # Since Zoom adds 5 hours to the actual date and time we want to schedule the meeting with, 
-    # we substract 5 hours to the actual date and time and pass it within the data.
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
+    tomorrow_time, start_time, meeting_data = get_datetimes()
 
-    # Send headers to authenticate
+    client.cookies.set("access_token", access_token)
     response = client.post("/schedule-meeting/", json=meeting_data)
+
     assert response.status_code == 404
     assert response.json()["detail"] == "No advisors available"
 
@@ -59,19 +59,9 @@ def test_successful_meeting_scheduling(register_users_for_login, insert_advisors
     """
     access_token = create_valid_access_token_1
     client = register_users_for_login
-    client.cookies.set("access_token", access_token)
-    # This is the actual date and time the meeting is going to be scheduled
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
+    tomorrow_time, start_time, meeting_data = get_datetimes()
     
-    # Since Zoom adds 5 hours to the actual date and time we want to schedule the meeting with, 
-    # we substract 5 hours to the actual date and time and pass it within the data.
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
-
-    # Send headers to authenticate
+    client.cookies.set("access_token", access_token)
     response = client.post("/schedule-meeting/", json=meeting_data)
     assert response.status_code == 200
 
@@ -112,12 +102,7 @@ def test_meeting_scheduling_fail_1(client, db_session):
         client (fixture): Fixture to provide the test client.
         db_session (fixture): Database session fixture.
     """
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
+    tomorrow_time, start_time, meeting_data = get_datetimes()
     client.cookies.delete("access_token")
     # Send the request without headers (user not authenticated)
     response = client.post("/schedule-meeting/", json=meeting_data)
@@ -136,12 +121,7 @@ def test_meeting_scheduling_fail_2(create_access_token_with_wrong_signature, cli
         create_access_token_with_wrong_signature (fixture): Fixture to create a token with a wrong signature.
         client (TestClient): The test client to send requests to the API.
     """
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
+    tomorrow_time, start_time, meeting_data = get_datetimes()
 
     access_token = create_access_token_with_wrong_signature
     client.cookies.set("access_token", access_token)
@@ -162,19 +142,15 @@ def test_meeting_scheduling_fail_3(register_users_for_login, create_access_token
         register_users_for_login (fixture): Fixture to register users for login.
         create_access_token_expired (fixture): Fixture to create an expired token.
     """
-    tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-    start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-    meeting_data = {
-        "start_time": start_time,
-        "topic" : "Testing meeting scheduling"
-    }
+    tomorrow_time, start_time, meeting_data = get_datetimes()
+
 
     access_token = create_access_token_expired
     client = register_users_for_login
     client.cookies.delete("access_token")
     client.cookies.set("access_token", access_token)
     # Wait for the token to expire
-    time.sleep(5)
+    time.sleep(3)
     response = client.post("/schedule-meeting/", json=meeting_data)
     print(response.json())
     assert response.status_code == 401
@@ -193,6 +169,8 @@ def test_meeting_scheduling_5(create_valid_access_token_2, register_users_for_lo
 
     response = client.post("/schedule-meeting/", json=meeting_data)
 
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "Input should be a valid datetime or date, invalid date separator, expected `-`"
 
 
 def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_for_login):
@@ -211,13 +189,7 @@ def test_meeting_scheduling_fail_4(create_valid_access_token_2, register_users_f
     client.cookies.set("access_token", access_token)
 
     for i in range(2):
-        tomorrow_time = datetime.now(timezone.utc) + timedelta(days=1)
-        start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
-        meeting_data = {
-            "start_time": start_time,
-            "topic" : "Testing meeting scheduling"
-        }
-
+        tomorrow_time, start_time, meeting_data = get_datetimes()
         response = client.post("/schedule-meeting/", json=meeting_data)
         if i == 0:
             assert response.status_code == 200

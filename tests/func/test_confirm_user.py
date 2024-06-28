@@ -137,7 +137,6 @@ def test_confirm_user_account_fail_2(register_users_for_login, db_session):
     time.sleep(7)
 
     response = client.patch("/confirm-user-account", json=confirm_data)
-    
     assert response.status_code == 401
     assert response.json()["detail"] == "Token has expired"
 
