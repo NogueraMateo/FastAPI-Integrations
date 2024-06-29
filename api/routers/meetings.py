@@ -107,7 +107,7 @@ async def edit_scheduled_meeting(
     return updated_meeting
 
 
-@router.delete("/delete/meeting/{meeting_id}")
+@router.delete("/delete/meeting/{meeting_id}", response_model=schemas.Meeting)
 async def delete_scheduled_meeting(
     meeting_id: str, 
     admin_user: models.User = Depends(get_current_admin_user), 

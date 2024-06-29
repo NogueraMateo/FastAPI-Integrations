@@ -137,7 +137,7 @@ async def invalid_token_for_confirmation():
         str: The invalid token string.
     """
     token_data = {"sub" : "robertjohnson@email.com", "aud" : "email-confirmation"}
-    yield generate_jwt(token_data, EMAIL_CONFIRMATION_SECRET_KEY, ALGORITHM)
+    return generate_jwt(token_data, "invalid_string_tosign_token", ALGORITHM, timedelta(minutes=3))
 
 
 @pytest.fixture(scope="module")
@@ -232,10 +232,7 @@ def create_meeting_to_edit(register_users_for_login, create_valid_access_token_2
     tomorrow_time, start_time, meeting_data = get_datetimes()
 
     client.cookies.set("access_token", access_token)
-
-    # Send headers to authenticate
     response = client.post("/schedule-meeting/", json=meeting_data)
-
     return (response.json()["zoom_meeting_id"], client)
 
 
