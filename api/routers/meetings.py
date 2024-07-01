@@ -4,8 +4,7 @@ from ..services.user_service import UserService
 from ..services.email_service import EmailService
 
 from fastapi import APIRouter, HTTPException, Depends
-from ..utils.auth_utils import get_current_user, get_current_admin_user
-from ..config.dependencies import oauth2_scheme
+from ..config.dependencies import oauth2_scheme, get_current_user, get_current_admin_user
 
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session

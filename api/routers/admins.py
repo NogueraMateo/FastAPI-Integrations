@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.orm import Session
-from ..utils.auth_utils import get_current_admin_user
+from ..config.dependencies import get_current_admin_user
 from .. import models, schemas
 from ..database import get_db
 from ..services.user_service import AdminService

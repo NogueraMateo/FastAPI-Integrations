@@ -1,11 +1,12 @@
 # --------------------- UTILS! ---------------------
-from ..utils.auth_utils import authenticate_user, create_access_token, get_current_user
+from ..utils.auth_utils import authenticate_user, create_access_token
 from ..utils.rate_limiting import rate_limit_exceeded
 
 # --------------------- SERVICES! ---------------------
 from ..services.user_service import UserService
 from ..services.token_service import EmailConfirmationTokenService
 from ..services.email_service import EmailService
+from ..config.dependencies import get_current_user
 
 from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES, LOGIN_RATE_LIMIT_PERIOD, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_SECRET_CLIENT
 from ..config.dependencies import oauth2_scheme

@@ -12,6 +12,7 @@ In today's fast-paced digital world, companies need to provide quick and efficie
 - PostgreSQL
 - Docker
 - Git & Github
+- Pytest 
 
 ## FEATURES
 
@@ -44,6 +45,9 @@ In today's fast-paced digital world, companies need to provide quick and efficie
 ### Deployment and Scalability
 - 🐳 **Dockerized Setup:** Easily deploy the application using Docker and Docker Compose.
 - 🔧 **Environment Configuration:** Use environment variables to configure the application securely.
+
+### Testing
+- 🧪 **Pytest:** Comprehensive testing using Pytest for ensuring code quality and reliability.
 
 # GETTING STARTED
 Follow the steps below to set up and run this project on your local machine. Ensure you have the necessary prerequisites.
@@ -131,6 +135,10 @@ POSTGRES_DB_PORT=5432                       # Don't change it
 
 # Replace the values above here in the url
 SQLALCHEMY_DATABASE_URL=postgresql://postgres:your_postgres_password@db:5432/RESTAPI-DB
+
+# PostgreSQL Test Database Configuration
+POSTGRES_TEST_DB=RESTAPI-DB-TEST 
+SQLALCHEMY_TEST_DATABASE_URL=postgresql://postgres:your_postgres_password@test_db:5432/RESTAPI-DB-TEST
 ```
 
 You can keep everything as it is, except for the **POSTGRES_PASSWORD**. Choose a secure password and replace it both in the variable and in the URL.
@@ -141,6 +149,12 @@ ACCESS_TOKEN_SECRET_KEY=your_access_token_secret_key
 EMAIL_CONFIRMATION_SECRET_KEY=your_email_confirmation_secret_key
 PASSWORD_RESET_SECRET_KEY=your_password_reset_secret_key
 GOOGLE_OAUTH_SECRET_KEY=your_google_oauth_secret_key
+
+# Token Expiration Times (in minutes)
+# You are free to change these times
+ACCESS_TOKEN_EXPIRE_MINUTES=10              
+RESET_TOKEN_EXPIRE_MINUTES=10
+CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES=4
 ```
 
 Your secret keys can be any string, but for better security of the API, it is recommended to generate long, secure strings. You can generate them using the following command in the terminal:
@@ -182,20 +196,18 @@ GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
 
 ```ini
 ADMIN_EMAIL=your_admin_email@example.com      
-ADMIN_PASSWORD_HASH=$2b$12$tOOtHr32DkiCAlnZa9F6UOASUvHo0vZlmMyYlvLxlttuqt7TvLyri
+ADMIN_PASSWORD=admin123
 ADVISOR_EMAIL=your_advisor_email@example.com
 ADVISOR_NAME=Your Advisor Name
 ```
 
 - **ADMIN_EMAIL:** This is the email address that will be used for the default admin account created when the application starts. This account has administrative privileges and can manage other users and settings within the application.
-- **ADMIN_PASSWORD_HASH:** This is the hashed password for the default admin account. To ensure security, use a strong hashing algorithm such as bcrypt to hash the password before setting this variable. Do not use plain text passwords. You're free to use the one provided in the **`.env.example`**,
-the plain password is **admin123**
+- **ADMIN_PASSWORD** This is the password for the default admin account. The plain password is **admin123**
 - **ADVISOR_EMAIL:** This is the email address for the default advisor that will be available in the system. Advisors are users who can be assigned to meetings and provide services or consultations.
 - **ADVISOR_NAME:** This is the full name of the default advisor. It will be used to identify the advisor in the system and in communications with users.
 
 ### Generating a Secure Password Hash
-To generate a secure password hash for the **`ADMIN_PASSWORD_HASH`** variable, you can use a tool like bcrypt. Here is an example of how to generate a bcrypt hash:
-
+Bcrypt is being used to generate the hashed password of the users. Here is an example
 ```python
 from passlib.context import CryptContext
 
@@ -210,7 +222,13 @@ print(password_hash)
 # Output: $2b$12$mw2oUt87EO.fxHVMT7Nzj.He1ld2Bw2rs7huwp099wiUta6OuyrVK
 ```
 
-Replace `your_secure_password` with your desired password and use the resulting hash for the `ADMIN_PASSWORD_HASH` variable.
+These are the rate limiting periods in seconds that are being used for developing. In tests, these times change.
+You are free to change these periods according to your needs.
+```ini
+# Rate Limiting Configuration (in seconds)
+LOGIN_RATE_LIMIT_PERIOD=300
+PASSWORD_RATE_LIMIT_PERIOD=3600
+```
 
 ## Running the Project with Docker
 
@@ -246,14 +264,27 @@ Once you have configured the `.env` file, you can easily run the project using D
 
     This command will stop and remove the containers defined in the docker-compose.yml file.
 
+This command stops the containers and removes the volumes, allowing you to start with a clean database when you run docker-compose up again.
+
+## Running Tests with Pytest 
+To ensure the application works as expected, I have implemented functional tests using Pytest.
+Once the Docker containers are up and running, follow these steps to run the tests.
+
+1. Run the tests:
+
+Navigate to the project directory and run the following command to execute the tests inside the Docker container:
+```bash
+docker-compose exec web pytest tests
+```
+This will run all the test cases and provide report on the test results.
+> It is normal for these kind of tests to take some time.
+
 ## Cleaning Up the Database
 If you need to clean up the database and start fresh, you can remove the Docker volumes used by the PostgreSQL container. This will delete all data in the database. Run the following command:
 
 ```bash
 docker-compose down -v
 ```
-
-This command stops the containers and removes the volumes, allowing you to start with a clean database when you run docker-compose up again.
 
 # Examples of Front-End Integration
 To demonstrate how to connect the front-end with the back-end for account confirmation and password reset, I have provided two example HTML files.
