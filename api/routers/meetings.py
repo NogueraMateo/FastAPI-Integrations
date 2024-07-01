@@ -5,6 +5,7 @@ from ..services.email_service import EmailService
 
 from fastapi import APIRouter, HTTPException, Depends
 from ..utils.auth_utils import get_current_user, get_current_admin_user
+from ..config.dependencies import oauth2_scheme
 
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ from .. import models, schemas
 router = APIRouter(tags=["Meeting scheduling"])
 
 # ------------------------------------------ ROUTE FOR SCHEDULING MEETINGS ------------------------------------------
-@router.post("/schedule-meeting/",response_model=schemas.Meeting)
+@router.post("/schedule-meeting/",response_model=schemas.Meeting, dependencies=[Depends(oauth2_scheme)])
 async def schedule_meeting(
     meeting_data: schemas.MeetingCreate,
     db: Session = Depends(get_db),
@@ -69,7 +70,7 @@ async def schedule_meeting(
     return new_meeting
 
 
-@router.patch("/edit/meeting/{meeting_id}", response_model=schemas.Meeting)
+@router.patch("/edit/meeting/{meeting_id}", response_model=schemas.Meeting, dependencies=[Depends(oauth2_scheme)])
 async def edit_scheduled_meeting(
     meeting_id: str, 
     meeting_update: schemas.MeetingUpdate, 
@@ -107,7 +108,7 @@ async def edit_scheduled_meeting(
     return updated_meeting
 
 
-@router.delete("/delete/meeting/{meeting_id}", response_model=schemas.Meeting)
+@router.delete("/delete/meeting/{meeting_id}", response_model=schemas.Meeting, dependencies=[Depends(oauth2_scheme)])
 async def delete_scheduled_meeting(
     meeting_id: str, 
     admin_user: models.User = Depends(get_current_admin_user), 

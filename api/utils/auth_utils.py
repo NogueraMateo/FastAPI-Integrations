@@ -7,6 +7,7 @@ from ..database import get_db
 from pydantic import EmailStr
 from typing import Optional
 from ..config.exceptions import credentials_exception, expired_token_exception
+from ..config.dependencies import oauth2_scheme
 from .. import models, schemas
 from ..config.constants import ACCESS_TOKEN_SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM
 from datetime import timedelta, datetime, timezone
@@ -59,7 +60,7 @@ async def create_access_token(data: dict, expires_delta: Optional[timedelta]= No
         raise Exception(f"Error encoding JWT: {str(e)}")
     
 
-def get_current_user(request: Request, db: Session= Depends(get_db)) -> models.User:
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session= Depends(get_db)) -> models.User:
     """
     Retrieve the current authenticated user from the database using the provided JWT token.
 
@@ -73,9 +74,6 @@ def get_current_user(request: Request, db: Session= Depends(get_db)) -> models.U
     Raises:
         HTTPException: If the token is expired or invalid, or if the user is not found.
     """
-    token = request.cookies.get("access_token")
-    if not token:
-        raise credentials_exception
     try:
         payload= jwt.decode(token, ACCESS_TOKEN_SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -112,6 +110,7 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
 
 def get_current_admin_user(current_user: models.User = Depends(get_current_active_user)) -> models.User:
     """

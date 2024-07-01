@@ -1,5 +1,4 @@
 from .auth import redis_client
-
 from ..services.user_service import UserService
 from ..services.token_service import PasswordResetTokenService
 from ..services.email_service import EmailService
@@ -8,8 +7,8 @@ from ..schemas import UserUpdate, PasswordResetTokenUpdate, ResetPasswordFields
 from ..database import get_db
 
 from ..utils.rate_limiting import rate_limit_exceeded
-
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Form, Request
+from ..config.constants import PASSWORD_RATE_LIMIT_PERIOD
+from fastapi import APIRouter, HTTPException, Depends, Form, Request
 from sqlalchemy.orm import Session
 
 
@@ -17,7 +16,7 @@ router= APIRouter(tags=["Password Recovery"])
 
 
 @router.get("/password-recovery/{email}")
-async def password_recovery(email: str, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+async def password_recovery(email: str, request: Request, db: Session = Depends(get_db)):
     """
     Initiate a password recovery process by sending a reset password link to the user's email.
 
@@ -44,15 +43,15 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
     identifier = f"{client_ip}:{email}"
     
     # Rate limiting: 5 requests per hour
-    if rate_limit_exceeded(redis_client, identifier, max_requests=5, period=3600):
+    if rate_limit_exceeded(redis_client, identifier, max_requests=5, period=PASSWORD_RATE_LIMIT_PERIOD):
         raise HTTPException(status_code=429, detail= "Rate limit exceeded, please try again later.")
 
     user = user_service.get_user_by_email(email)
     if not user:
-        raise HTTPException(status_code=404, detail="El usuario no existe.")
+        raise HTTPException(status_code=404, detail="The user doesn't exist.")
     
     # Generate token with useful information and expiration time
-    token_data = {"sub": email, "aud": "password-recovery"}
+    token_data = {"sub": email, "id": user.id, "aud": "password-recovery"}
     password_reset_token, expiry = await token_service.create_token(
         data= token_data
     )
@@ -60,8 +59,7 @@ async def password_recovery(email: str, background_tasks: BackgroundTasks, reque
     token_service.insert_token(user_id=user.id, token= password_reset_token, expiry= expiry)
     await email_service.send_reset_password_email(email, password_reset_token)
 
-    return {"msg": "El enlace para restablecer tu contraseña ha sido enviado, por favor revisa tu email.",
-            "token" : password_reset_token}
+    return {"msg": "The link to reset your password has been sent, please check your email."}
 
 
 @router.patch("/reset-password")
@@ -85,21 +83,22 @@ async def reset_password(info: ResetPasswordFields, db: Session = Depends(get_db
     token_service = PasswordResetTokenService(db)
     user_service = UserService(db)
 
-    email = await token_service.verify_token(info.token)
-    user = user_service.get_user_by_email(email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+    email, user_id = await token_service.verify_token(info.token)
     
     if info.new_password != info.new_password_confirm:
+        token_update= PasswordResetTokenUpdate(is_used= True)
+        token_service.update_token(token= info.token, token_update=token_update)
         raise HTTPException(status_code= 400, detail= "Passwords don't match.")
 
     if len(info.new_password) < 7:
+        token_update= PasswordResetTokenUpdate(is_used= True)
+        token_service.update_token(token= info.token, token_update=token_update)
         raise HTTPException(status_code=400, detail="Password must be at least 7 characters long")
 
     user_update = UserUpdate(plain_password= info.new_password)
-    user_service.update_user(user_id= user.id, user_update= user_update)
+    user_service.update_user(user_id= user_id, user_update= user_update)
 
     token_update= PasswordResetTokenUpdate(is_used= True)
     token_service.update_token(token= info.token, token_update=token_update)
 
-    return {"message" : "The password has been updated succesfully"}
+    return {"msg" : "The password has been updated succesfully"}

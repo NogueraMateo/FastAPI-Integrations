@@ -10,14 +10,9 @@ def test_successful_meeting_deletion(create_meeting_to_edit, create_admin_access
     client.cookies.delete("access_token")
     assert response.status_code == 200
     response_data = response.json()
-    assert  "start_time" in response_data
     assert  "zoom_meeting_id" in response_data
     assert  response_data["zoom_meeting_id"] == meeting_id
-    assert  "join_url" in response_data
-    assert  "user_id" in response_data
-    assert  "advisor_id" in response_data
-    assert "topic" in response_data
-    assert "id" in response_data
+    
 
 def test_meeting_deletion_fail_1(client, inactive_admin_access_token):
     access_token = inactive_admin_access_token

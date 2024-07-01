@@ -39,5 +39,6 @@ ADVISOR_EMAIL = os.getenv('ADVISOR_EMAIL')
 ADVISOR_NAME = os.getenv('ADVISOR_NAME')
 
 # -------------------------- RATE LIMITING --------------------------
-RATE_LIMIT_PERIOD = int(os.getenv("RATE_LIMIT_PERIOD"))
+LOGIN_RATE_LIMIT_PERIOD = int(os.getenv("LOGIN_RATE_LIMIT_PERIOD"))
+PASSWORD_RATE_LIMIT_PERIOD = int(os.getenv("PASSWORD_RATE_LIMIT_PERIOD"))
 

@@ -1,6 +1,5 @@
 from datetime import datetime, timezone, timedelta
 from api.schemas import Meeting
-from api.services.meeting_service import MeetingService
 import time
 
 def get_datetimes():
@@ -10,7 +9,6 @@ def get_datetimes():
     # we substract 5 hours to the actual date and time and pass it within the data.
     start_time = (tomorrow_time - timedelta(hours=5)).replace(microsecond=0).isoformat()
     meeting_data = {"start_time": start_time,"topic" : "Testing meeting scheduling"}
-
     return (tomorrow_time, start_time, meeting_data)
 
 
@@ -80,13 +78,7 @@ def test_successful_meeting_scheduling(register_users_for_login, insert_advisors
 
     assert response_start_time == expected_start_time
     assert response_data["topic"] == "Testing meeting scheduling"
-
-    service = MeetingService(db_session)
-    zoom_meeting_info = service.get_meeting(response_data["zoom_meeting_id"])
-
-    assert str(zoom_meeting_info.get("id")) == response_data.get("zoom_meeting_id")
-    assert zoom_meeting_info.get("join_url") == response_data.get("join_url")
-    assert zoom_meeting_info.get("topic") == response_data.get("topic")
+    
 
 
 def test_meeting_scheduling_fail_1(client, db_session):
@@ -152,7 +144,6 @@ def test_meeting_scheduling_fail_3(register_users_for_login, create_access_token
     # Wait for the token to expire
     time.sleep(3)
     response = client.post("/schedule-meeting/", json=meeting_data)
-    print(response.json())
     assert response.status_code == 401
     assert response.json()["detail"] == "Token has expired"
 

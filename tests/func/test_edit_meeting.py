@@ -1,4 +1,3 @@
-from api.services.meeting_service import MeetingService
 from api.schemas import MeetingUpdate
 from datetime import datetime, timezone, timedelta
 import time

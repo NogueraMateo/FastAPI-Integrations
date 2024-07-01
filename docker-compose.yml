@@ -47,8 +47,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      test_db:
-        condition: service_healthy
       redis:
         condition: service_started
 

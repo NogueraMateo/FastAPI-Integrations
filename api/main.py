@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.openapi.utils import get_openapi
 from sqlalchemy.orm import Session
 from . import models
 from .database import engine, SessionLocal
@@ -42,6 +43,33 @@ async def lifespan(app:FastAPI):
 
 app = FastAPI(lifespan= lifespan)
 
+# uvicorn backend.api.main:app --reload
+@app.get("/")
+async def root():
+    return {"message": "Server raised"}
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Your API",
+        version="1.0.0",
+        description="Your API description",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "OAuth2PasswordBearerWithCookie": {
+            "type": "apiKey",
+            "name": "access_token",
+            "in": "cookie"
+        }
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -55,9 +83,3 @@ app.include_router(auth.router)
 app.include_router(password_reset.router)
 app.include_router(meetings.router)
 app.include_router(admins.router)
-
-
-# uvicorn backend.api.main:app --reload
-@app.get("/")
-async def root():
-    return {"message": "Server raised"}

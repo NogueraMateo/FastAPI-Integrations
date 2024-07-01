@@ -234,3 +234,62 @@ def test_register_user_fail_13(client):
     response = client.post("/register", json=user_data)
     assert response.status_code == 422
     assert response.json()["detail"][0]["msg"] == "String should have at least 7 characters"
+
+def test_register_user_fail_14(client):
+    user_data = {
+        "first_name": 5,
+        "lastname": "Doe",
+        "email": "email@example.com",
+        "plain_password": "anypassordisok",
+        "phone_number" : "318243"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert "first_name" in response.json()["detail"][0]["loc"]
+    assert response.json()["detail"][0]["msg"] == "Input should be a valid string"
+
+
+def test_register_user_fail_15(client):
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": 534343,
+        "email": "email@example.com",
+        "plain_password": "anypassordisok",
+        "phone_number" : "318243"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert "lastname" in response.json()["detail"][0]["loc"]
+    assert response.json()["detail"][0]["msg"] == "Input should be a valid string"
+
+
+def test_register_user_fail_16(client):
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": "Doe",
+        "email": 243654.33,
+        "plain_password": "anypassordisok",
+        "phone_number" : "318243"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert "email" in response.json()["detail"][0]["loc"]
+    assert response.json()["detail"][0]["msg"] == "Input should be a valid string"
+
+
+def test_register_user_fail_17(client):
+    user_data = {
+        "first_name": "Matheww",
+        "lastname": "Doe",
+        "email": "email@example.com",
+        "plain_password": 2324221,
+        "phone_number" : "+573113291234"
+    }
+
+    response = client.post("/register", json=user_data)
+    assert response.status_code == 422
+    assert "plain_password" in response.json()["detail"][0]["loc"]
+    assert response.json()["detail"][0]["msg"] == "Input should be a valid string"

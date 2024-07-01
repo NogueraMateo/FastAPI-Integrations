@@ -144,7 +144,7 @@ class PasswordResetTokenService(TokenServiceBase):
         return token_db
 
 
-    async def verify_token(self, token: str) -> EmailStr:
+    async def verify_token(self, token: str) -> (EmailStr, int):
         """
         Verify the validity of a password reset token.
 
@@ -167,7 +167,8 @@ class PasswordResetTokenService(TokenServiceBase):
             email = payload.get("sub")
             if email is None:
                 raise credentials_exception
-            return email
+            user_id = payload.get("id")
+            return (email, user_id)
         
         except ExpiredSignatureError:
             raise expired_token_exception

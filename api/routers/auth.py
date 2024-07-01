@@ -1,5 +1,5 @@
 # --------------------- UTILS! ---------------------
-from ..utils.auth_utils import authenticate_user, create_access_token
+from ..utils.auth_utils import authenticate_user, create_access_token, get_current_user
 from ..utils.rate_limiting import rate_limit_exceeded
 
 # --------------------- SERVICES! ---------------------
@@ -7,16 +7,14 @@ from ..services.user_service import UserService
 from ..services.token_service import EmailConfirmationTokenService
 from ..services.email_service import EmailService
 
-from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES, RATE_LIMIT_PERIOD
+from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES, LOGIN_RATE_LIMIT_PERIOD, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_SECRET_CLIENT
+from ..config.dependencies import oauth2_scheme
 
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
-from ..config.constants import GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_SECRET_CLIENT
 
 from ..database import get_db
-from .. import schemas
+from .. import schemas, models
 
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -73,7 +71,7 @@ async def login(
     client_ip = request.client.host
     identifier = f"{client_ip}:{username}"
 
-    if rate_limit_exceeded(redis_client= redis_client, identifier= identifier, max_requests= 5, period= RATE_LIMIT_PERIOD):
+    if rate_limit_exceeded(redis_client= redis_client, identifier= identifier, max_requests= 5, period= LOGIN_RATE_LIMIT_PERIOD):
         raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
     
     user = await authenticate_user(db, form_data.username, form_data.password)
@@ -97,8 +95,12 @@ async def login(
         value= access_token,
         secure= False, # This value must be true in production environment with HTTPS
         samesite= 'Lax',
-        max_age= ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        max_age= ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        httponly=True
     )
+
+    return {"msg" : "User logged in successfully"}
+
 
 @router.get("/login/google")
 async def login_google(request: Request):
@@ -180,11 +182,7 @@ async def auth(response: Response, request: Request, db: Session= Depends(get_db
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
 
-    return {
-        "access_token": access_token,
-        "token-type": "Bearer",
-        "email": user_email
-    }
+    return {"msg" : "User logged in successfully"}
 
 
 @router.post("/register", status_code= 201)
@@ -206,8 +204,6 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
         HTTPException: If the password is less than 7 characters long (status code 400).
     """
     user_service = UserService(db)
-    token_service = EmailConfirmationTokenService(db)
-    email_service = EmailService()
 
     exists_email = user_service.get_user_by_email(user_email= user.email)
     exists_phone_number = user_service.get_user_by_phone_number(phone_number= user.phone_number) if user.phone_number is not None else None
@@ -226,6 +222,9 @@ async def new_user_registration(user: schemas.UserCreate,db: Session = Depends(g
         raise HTTPException(status_code=400, detail="Password must be at least 7 characters long.")
 
     user_created= user_service.create_user(user= user)
+
+    token_service = EmailConfirmationTokenService(db)
+    email_service = EmailService()
 
     # Generating email confirmation token
     token_data = {"sub" : user.email, "aud" : "email-confirmation"}
@@ -255,10 +254,10 @@ async def confirm_user_account(info: schemas.ConfirmBase, db: Session = Depends(
     Raises:
         HTTPException: If the user is not found (status code 404).
     """
-    user_service = UserService(db)
     token_service = EmailConfirmationTokenService(db)
     email = await token_service.verify_token(info.token)
-
+    
+    user_service = UserService(db)
     user = user_service.get_user_by_email(email)
     if not user:
         raise HTTPException(status_code=404, detail= "User not found.")
@@ -269,3 +268,22 @@ async def confirm_user_account(info: schemas.ConfirmBase, db: Session = Depends(
     token_service.update_token(info.token, token_update)
 
     return {"message" : "User account activated successfully"}
+
+
+@router.get("/get-token/confirm-user-account", dependencies=[Depends(oauth2_scheme)])
+async def get_confirmation_token(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):    
+    if current_user.is_active:
+        raise HTTPException(status_code= 400, detail="Your account is alredy active.")
+    
+    token_service = EmailConfirmationTokenService(db)  
+    email_service = EmailService()
+
+    # Generating email confirmation token
+    token_data = {"sub" : user.email, "aud" : "email-confirmation"}
+    token, expiry = await token_service.create_token(data= token_data)
+
+    # Inserting the new token to the database
+    token_service.insert_token(user_created.id, token, expiry)
+
+    # Sending confirmation email
+    await email_service.send_confirmation_account_message(user.email, token)

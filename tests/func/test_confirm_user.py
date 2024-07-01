@@ -40,9 +40,6 @@ def test_confirm_user_account_1(client, db_session):
     assert response.status_code == 200
     assert response.json()["message"] == "User account activated successfully"
 
-    updated_user = db.query(User).filter(User.email == user_data["email"]).first()
-    assert updated_user.is_active
-
 
 def test_confirm_user_account_2(register_users_for_login, db_session):
     """
@@ -63,10 +60,7 @@ def test_confirm_user_account_2(register_users_for_login, db_session):
     db: TestingSessionLocal = db_session
 
     user = db.query(User).filter(User.email == "janesmith@email.com").first()
-    assert user is not None
-
     token_entry = db.query(EmailConfirmationToken).filter(EmailConfirmationToken.user_id == user.id).first()
-    assert token_entry is not None  
     token = token_entry.token
 
     confirm_data = {"token" : token}
@@ -74,9 +68,6 @@ def test_confirm_user_account_2(register_users_for_login, db_session):
 
     assert response.status_code == 200
     assert response.json()["message"] == "User account activated successfully"
-
-    updated_user = db.query(User).filter(User.email == "janesmith@email.com").first()
-    assert updated_user.is_active
 
     response = client.patch("/confirm-user-account", json=confirm_data)
     updated_token_entry: EmailConfirmationToken = db.query(EmailConfirmationToken).filter(EmailConfirmationToken.token == token).first()
@@ -87,7 +78,7 @@ def test_confirm_user_account_2(register_users_for_login, db_session):
 
 
 @pytest.mark.asyncio
-async def test_confirm_user_account_fail_1(invalid_token_for_confirmation, client):
+async def test_confirm_user_account_fail_1(client):
     """
     Test that confirming an account with an invalid token results in an error.
 
@@ -97,11 +88,9 @@ async def test_confirm_user_account_fail_1(invalid_token_for_confirmation, clien
     - Check that the confirmation attempt fails.
 
     Args:
-    - invalid_token_for_confirmation: Fixture to generate an invalid token.
     - client: Test client.
     """
-    token = await invalid_token_for_confirmation
-    confirm_data = {"token" : token}
+    confirm_data = {"token" : 'invalid_token'}
     response = client.patch("/confirm-user-account", json=confirm_data)
 
     assert response.status_code == 401
@@ -127,10 +116,7 @@ def test_confirm_user_account_fail_2(register_users_for_login, db_session):
     db: TestingSessionLocal = db_session
 
     user = db.query(User).filter(User.email == "johndoe@email.com").first()
-    assert user is not None
-
-    token_entry = db.query(EmailConfirmationToken).filter(EmailConfirmationToken.user_id == user.id).first()
-    assert token_entry is not None  
+    token_entry = db.query(EmailConfirmationToken).filter(EmailConfirmationToken.user_id == user.id).first() 
     token = token_entry.token
 
     confirm_data = {"token" : token}

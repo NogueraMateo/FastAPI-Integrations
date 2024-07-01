@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-os.environ["RATE_LIMIT_PERIOD"] = "1"
+os.environ["LOGIN_RATE_LIMIT_PERIOD"] = "1"
+os.environ["PASSWORD_RATE_LIMIT_PERIOD"] = "2"
 os.environ["CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES"] = "0.1"
 
 
@@ -22,10 +23,9 @@ from api.config.constants import ACCESS_TOKEN_SECRET_KEY, ALGORITHM, EMAIL_CONFI
 from api.models import crypt
 from .func.test_meeting_scheduling import get_datetimes
 
+SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_TEST_DATABASE_URL")
 
-SQLALCHEMY_TEST_DATABASE_URL=os.getenv("SQLALCHEMY_TEST_DATABASE_URL")
-
-engine_test = create_engine(SQLALCHEMY_TEST_DATABASE_URL)
+engine_test = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal= sessionmaker(autocommit=False, autoflush=False, bind=engine_test)
 
 Base.metadata.create_all(bind=engine_test)
@@ -120,25 +120,7 @@ def register_users_for_login(client):
         response = client.post("/register", json=user)
 
     return client
-
-
-@pytest.fixture(scope="module")
-async def invalid_token_for_confirmation():
-    """
-    Fixture to generate an invalid token for email confirmation.
-
-    This fixture creates an invalid email confirmation token to be used in tests 
-    that verify the handling of invalid tokens.
-
-    Args:
-        db_session: The test database session fixture.
-
-    Yields:
-        str: The invalid token string.
-    """
-    token_data = {"sub" : "robertjohnson@email.com", "aud" : "email-confirmation"}
-    return generate_jwt(token_data, "invalid_string_tosign_token", ALGORITHM, timedelta(minutes=3))
-
+    
 
 @pytest.fixture(scope="module")
 def insert_advisors_for_meeting_scheduling(db_session):
@@ -207,6 +189,17 @@ def create_valid_access_token_2():
 
 
 @pytest.fixture(scope="module")
+def create_valid_access_token_3(db_session):
+    db: TestingSessionLocal = db_session
+    user: User= db.query(User).filter(User.email == "janesmith@email.com").first()
+    user.is_active = True
+    db.commit()
+
+    data = {"sub" : "janesmith@email.com"}
+    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
+
+
+@pytest.fixture(scope="module")
 def create_admin_access_token(db_session):
     db: TestingSessionLocal = db_session
     admin_password = crypt.hash("admin123")
@@ -255,13 +248,5 @@ def inactive_admin_access_token(db_session):
     yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 
 
-@pytest.fixture(scope="module")
-def create_valid_access_token_3(db_session):
-    db: TestingSessionLocal = db_session
-    user: User= db.query(User).filter(User.email == "janesmith@email.com").first()
-    user.is_active = True
-    db.commit()
 
-    data = {"sub" : "janesmith@email.com"}
-    yield generate_jwt(data, ACCESS_TOKEN_SECRET_KEY, ALGORITHM, timedelta(minutes=3))
 # docker-compose exec web pytest tests/func/test_confirm_user.py
