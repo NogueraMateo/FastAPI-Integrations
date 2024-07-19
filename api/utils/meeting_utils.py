@@ -1,11 +1,7 @@
-from fastapi_mail import FastMail, MessageSchema
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
-from dateutil import parser
-from ..models import Advisor, User
-from pydantic import EmailStr, BaseModel
+from ..models import Advisor
 from typing import Optional
-from ..services.token_service import EmailConfirmationTokenService, PasswordResetTokenService
 
 
 async def get_next_advisor(db: Session) -> Optional[Advisor] :

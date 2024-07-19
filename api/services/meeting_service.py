@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from ..config.exceptions import PatchMeetingError, DeleteMeetingError, CreateMeetingError, GetMeetingError
 from datetime import datetime
 from .. import models, schemas
@@ -86,7 +86,7 @@ class MeetingService:
         raise GetMeetingError
 
 
-    def create_meeting(self, start_time: datetime, topic: str, user_id: int, advisor_id: int) -> (models.Meeting, dict):
+    def create_meeting(self, start_time: datetime, topic: str, user_id: int, advisor_id: int) -> tuple[models.Meeting, dict]:
         """
         Create a new Zoom meeting and save it to the database.
 
@@ -162,7 +162,7 @@ class MeetingService:
         access_token = self.get_meeting_access_token()
         db_meeting: models.Meeting = self.get_meeting_by_zoom_id(meeting_id)
         if not db_meeting:
-            raise HTTPException(status_code=404, detail="Meeting id not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Meeting id not found")
         
         url = f"https://api.zoom.us/v2/meetings/{meeting_id}"
         headers = {

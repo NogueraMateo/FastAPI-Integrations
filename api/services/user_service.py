@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from passlib.context import CryptContext
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 crypt = CryptContext(schemes= ["bcrypt"])
 
@@ -149,7 +149,7 @@ class UserService:
         """
         db_user = self.get_user_by_id(user_id)
         if not db_user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         
         self.check_unique_constraints(db_user, user_update)
         
@@ -202,12 +202,12 @@ class UserService:
         if user_update.email and user_update.email != db_user.email:
             exists_email = self.get_user_by_email(user_update.email)
             if exists_email:
-                raise HTTPException(status_code=400, detail="Email already registered")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
         if user_update.phone_number and user_update.phone_number != db_user.phone_number:
             exists_phone_number = self.get_user_by_phone_number(user_update.phone_number)
             if exists_phone_number:
-                raise HTTPException(status_code=400, detail="Phone number already registered")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already registered")
 
 
 

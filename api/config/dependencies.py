@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException
 from fastapi.security.base import SecurityBase
 from fastapi.openapi.models import APIKey, APIKeyIn
-from fastapi import Request
+from fastapi import Request, status
 from jose import JWTError, jwt, ExpiredSignatureError
-from .. import models
-from ..config.constants import ACCESS_TOKEN_SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM
+from .. import models, schemas
+from ..config.constants import ACCESS_TOKEN_SECRET_KEY, ALGORITHM
 from ..config.exceptions import credentials_exception, expired_token_exception
 from sqlalchemy.orm import Session
 from ..database import get_db
@@ -78,7 +78,7 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
         HTTPException: If the user is not active
     """
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
 
@@ -97,7 +97,7 @@ def get_current_admin_user(current_user: models.User = Depends(get_current_activ
     """
     if current_user.role != models.UserRole.ADMIN:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Operation not permitted"
         )
     return current_user

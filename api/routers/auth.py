@@ -82,19 +82,14 @@ async def login(
             detail="Incorrect email or password",
             headers= {"WWW-Authenticate": "Bearer"}
         )
-    
-    # Elimina el conteo de intentos fallidos una vez el usuario se autentica correctamente.
-    redis_client.delete(identifier)
-
+        
     access_token_expires= timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(
-        data= {"sub": user.email}, expires_delta= access_token_expires
-    )
+    access_token = await create_access_token(data= {"sub": user.email}, expires_delta= access_token_expires)
 
     response.set_cookie(
         key="access_token",
         value= access_token,
-        secure= False, # This value must be true in production environment with HTTPS
+        secure= False, # True in production
         samesite= 'Lax',
         max_age= ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         httponly=True
@@ -280,11 +275,11 @@ async def get_confirmation_token(current_user: models.User = Depends(get_current
     email_service = EmailService()
 
     # Generating email confirmation token
-    token_data = {"sub" : user.email, "aud" : "email-confirmation"}
+    token_data = {"sub" : current_user.email, "aud" : "email-confirmation"}
     token, expiry = await token_service.create_token(data= token_data)
 
     # Inserting the new token to the database
-    token_service.insert_token(user_created.id, token, expiry)
+    token_service.insert_token(current_user.id, token, expiry)
 
     # Sending confirmation email
-    await email_service.send_confirmation_account_message(user.email, token)
+    await email_service.send_confirmation_account_message(current_user.email, token)

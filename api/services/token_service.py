@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt, ExpiredSignatureError
 from pydantic import EmailStr
 from typing import Optional
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from ..config.constants import (
     CONFIRMATION_ACCOUNT_TOKEN_EXPIRE_MINUTES, EMAIL_CONFIRMATION_SECRET_KEY, ALGORITHM,
     RESET_TOKEN_EXPIRE_MINUTES, PASSWORD_RESET_SECRET_KEY
@@ -94,7 +94,7 @@ class PasswordResetTokenService(TokenServiceBase):
         return password_reset_token
 
 
-    async def create_token(self, data: dict, expires_delta: Optional[timedelta]= None, secret_key: str = None) -> (str, datetime):
+    async def create_token(self, data: dict, expires_delta: Optional[timedelta]= None, secret_key: str = None) -> tuple[str, datetime]:
         """
         Generate a token for password reset.
 
@@ -133,7 +133,7 @@ class PasswordResetTokenService(TokenServiceBase):
 
         token_db = self.get_token_info(token)
         if not token_db:
-            raise HTTPException(status_code=404, detail="Token not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found")
         update_data = token_update.model_dump()
 
         for key, value in update_data.items():
@@ -144,7 +144,7 @@ class PasswordResetTokenService(TokenServiceBase):
         return token_db
 
 
-    async def verify_token(self, token: str) -> (EmailStr, int):
+    async def verify_token(self, token: str) -> tuple[EmailStr, int]:
         """
         Verify the validity of a password reset token.
 
@@ -161,7 +161,7 @@ class PasswordResetTokenService(TokenServiceBase):
         db_token = self.get_token_info(token)
 
         if db_token is not None and db_token.is_used:
-            raise HTTPException(status_code=400, detail="Invalid token")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
         try:
             payload = jwt.decode(token, PASSWORD_RESET_SECRET_KEY, algorithms=[ALGORITHM], audience= "password-recovery")
             email = payload.get("sub")
@@ -228,7 +228,7 @@ class EmailConfirmationTokenService(TokenServiceBase):
         return confirm_account_token
 
     
-    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None, secret_key: str = None) -> (str, datetime):
+    async def create_token(self, data: dict, expires_delta: Optional[timedelta] = None, secret_key: str = None) -> tuple[str, datetime]:
         """
         Generate an email confirmation token.
 
@@ -267,7 +267,7 @@ class EmailConfirmationTokenService(TokenServiceBase):
         """
         token_db = self.get_token_info(token)
         if not token_db:
-            raise HTTPException(status_code=404, detail="Token not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found")
         update_data = token_update.model_dump()
 
         for key, value in update_data.items():
@@ -294,7 +294,7 @@ class EmailConfirmationTokenService(TokenServiceBase):
         db_token = self.get_token_info(token)
 
         if db_token is not None and db_token.is_used:
-            raise HTTPException(status_code=400, detail="Invalid token")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
         try:
             payload = jwt.decode(token, EMAIL_CONFIRMATION_SECRET_KEY, algorithms=[ALGORITHM], audience= "email-confirmation")
             email = payload.get("sub")

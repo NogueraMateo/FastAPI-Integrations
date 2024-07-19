@@ -3,7 +3,7 @@ from ..services.meeting_service import MeetingService
 from ..services.user_service import UserService
 from ..services.email_service import EmailService
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from ..config.dependencies import oauth2_scheme, get_current_user, get_current_admin_user
 
 from datetime import datetime, timezone
@@ -48,15 +48,15 @@ async def schedule_meeting(
     email_service = EmailService()
 
     if not current_user:
-        raise HTTPException(status_code=401, detail= "Unauthorized")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail= "Unauthorized")
 
     if not current_user.can_schedule_meeting():
-        raise HTTPException(status_code=400, detail= "It has not been 7 days since you last scheduled a meeting") 
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= "It has not been 7 days since you last scheduled a meeting") 
 
     # Ensuring there is available advisors
     advisor = await get_next_advisor(db)
     if not advisor:
-        raise HTTPException(status_code=404, detail="No advisors available")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No advisors available")
 
     new_meeting, meeting_info = meeting_service.create_meeting(meeting_data.start_time, meeting_data.topic, current_user.id, advisor.id)
 
@@ -97,7 +97,7 @@ async def edit_scheduled_meeting(
     try:
         updated_meeting: models.Meeting = meeting_service.update_meeting(meeting_id, meeting_update)
     except:
-        raise HTTPException(status_code=400, detail= "Something went wrong while updating the meeting")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= "Something went wrong while updating the meeting")
 
     email_service = EmailService()
 
@@ -132,6 +132,6 @@ async def delete_scheduled_meeting(
     try:
         deleted_meeting = meeting_service.delete_meeting(meeting_id)
     except:
-        raise HTTPException(status_code=400, detail="Something went wrong while deleting the meeting")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong while deleting the meeting")
     
     return deleted_meeting

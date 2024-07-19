@@ -8,7 +8,7 @@ from ..database import get_db
 
 from ..utils.rate_limiting import rate_limit_exceeded
 from ..config.constants import PASSWORD_RATE_LIMIT_PERIOD
-from fastapi import APIRouter, HTTPException, Depends, Form, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from sqlalchemy.orm import Session
 
 
@@ -44,11 +44,11 @@ async def password_recovery(email: str, request: Request, db: Session = Depends(
     
     # Rate limiting: 5 requests per hour
     if rate_limit_exceeded(redis_client, identifier, max_requests=5, period=PASSWORD_RATE_LIMIT_PERIOD):
-        raise HTTPException(status_code=429, detail= "Rate limit exceeded, please try again later.")
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail= "Rate limit exceeded, please try again later.")
 
     user = user_service.get_user_by_email(email)
     if not user:
-        raise HTTPException(status_code=404, detail="The user doesn't exist.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The user doesn't exist.")
     
     # Generate token with useful information and expiration time
     token_data = {"sub": email, "id": user.id, "aud": "password-recovery"}
@@ -88,12 +88,12 @@ async def reset_password(info: ResetPasswordFields, db: Session = Depends(get_db
     if info.new_password != info.new_password_confirm:
         token_update= PasswordResetTokenUpdate(is_used= True)
         token_service.update_token(token= info.token, token_update=token_update)
-        raise HTTPException(status_code= 400, detail= "Passwords don't match.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= "Passwords don't match.")
 
     if len(info.new_password) < 7:
         token_update= PasswordResetTokenUpdate(is_used= True)
         token_service.update_token(token= info.token, token_update=token_update)
-        raise HTTPException(status_code=400, detail="Password must be at least 7 characters long")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 7 characters long")
 
     user_update = UserUpdate(plain_password= info.new_password)
     user_service.update_user(user_id= user_id, user_update= user_update)

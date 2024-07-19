@@ -8,6 +8,7 @@ from pydantic import EmailStr
 from typing import Optional
 from .. import models, schemas
 from datetime import timedelta, datetime, timezone
+from ..config.constants import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, ACCESS_TOKEN_SECRET_KEY
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
